@@ -83,14 +83,49 @@ binary_times([1|Xs],Y,Z) :-
 
 
 /**** TASK 5 ****/
-% divisable(X,Y) :-
-%     0 is X mod Y,
-%     Y >= 3.
+/*  check if N can be divisible by 2 */
+divisible(N) :- 0 is N mod 2.
+/*  check if N can be divisible by some odd integer,
+    starting from 3 until sqrt(X). */
+divisible(N) :- divisible(N,3).
+divisible(N,ODD_INT) :- 0 is N mod ODD_INT.
+divisible(N,ODD_INT) :- sqrt(N) > ODD_INT+2, divisible(N, ODD_INT+2).
 
-% divisable(X,Y+2) :-
-%     divisable(X,Y).
+is_prime(2) :- true.
+is_prime(3) :- true.
+is_prime(N) :-
+    N > 3,
+    not(divisible(N)).
 
-% is_prime(2).
-% is_prime(X) :-
-%     not(0 is X mod 2),
-%     not(divisable(X,round(sqrt(X)))).
+/**** TASK 6 ****/
+right_prime(N) :-
+    N < 10,
+    is_prime(N).
+
+right_prime(N) :-
+    N >= 10,
+    is_prime(N),
+    right_prime(N // 10).
+
+/**** TASK 7 ****/
+right_prime_gen(2).
+right_prime_gen(N) :-
+    right_prime_gen(N,3).
+right_prime_gen(N,ODD_INT) :-
+    N is ODD_INT,
+    right_prime(ODD_INT).
+right_prime_gen(N,ODD_INT) :-
+    right_prime_gen(N,ODD_INT+2).
+
+
+
+/**** TASK 8 ****/
+tree(nil).
+tree(nil,_,nil).
+tree(tree(_),_,tree(_)).
+
+preorder_tree(tree(nil,N,nil),[N]).
+preorder_tree(tree(L,N,R),[N|Ns]) :-
+    preorder_tree(L, Ls),
+    preorder_tree(R, Rs),
+    append(Rs,Ls,Ns).
