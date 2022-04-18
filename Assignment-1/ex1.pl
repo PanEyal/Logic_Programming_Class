@@ -83,19 +83,22 @@ binary_times([1|Xs],Y,Z) :-
 
 
 /**** TASK 5 ****/
-/*  check if N can be divisible by 2 */
-divisible(N) :- 0 is N mod 2.
-/*  check if N can be divisible by some odd integer,
-    starting from 3 until sqrt(X). */
-divisible(N) :- divisible(N,3).
-divisible(N,ODD_INT) :- 0 is N mod ODD_INT.
-divisible(N,ODD_INT) :- sqrt(N) > ODD_INT+2, divisible(N, ODD_INT+2).
-
-is_prime(2) :- true.
-is_prime(3) :- true.
+/*  check if N can be divisible by 2 or by some odd integer,
+    meaning, starting from 3 until sqrt(X). */
+is_prime(2).
+is_prime(3).
 is_prime(N) :-
     N > 3,
-    not(divisible(N)).
+    0 =\= N mod 2,
+    is_prime(N, 3).
+/* if all of the checked (smaller than sqrt(N)) numbers did not divided N,
+    N is prime. */
+is_prime(N,ODD_INT) :- sqrt(N) < ODD_INT.
+/* continue checking for larger odd numbers that are smaller than sqrt(N) */
+is_prime(N,ODD_INT) :-
+    sqrt(N) > ODD_INT,
+    0 =\= N mod ODD_INT,
+    is_prime(N,ODD_INT+2).
 
 /**** TASK 6 ****/
 right_prime(N) :-
