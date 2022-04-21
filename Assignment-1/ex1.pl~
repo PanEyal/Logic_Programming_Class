@@ -4,7 +4,9 @@ nor did I give parts of it for use to others. I have clearly marked in the comme
 of my program any code taken from an external source. *****/
 
 
+
 /**** Unary Rules From Class ****/
+
 s(0).
 s(s(X)) :- s(X).
 
@@ -13,23 +15,22 @@ is_unary(X) :- s(X).
 unary_plus(0,Y,Y) :- is_unary(Y).
 unary_plus(s(X),Y,s(Z)) :- unary_plus(X,Y,Z).
 
+unary_leq(0,X) :- is_unary(X).
+unary_leq(s(X),s(Y)) :- unary_leq(X,Y).
+
+
+
+/**** TASK 1 ****/
+
+% for this task I made unary_times1(+,+,-) similiar to unary_times
+% function that was seen in class.
 unary_times1(0,_Y,0).
 unary_times1(s(_X),0,0).
 unary_times1(s(X),s(Y),Z) :-
     unary_times1(s(Y),X,PREV_Z),
     unary_plus(s(Y),PREV_Z,Z).
 
-unary_times2(0,_Y,0).
-unary_times2(s(_X),0,0).
-unary_times2(s(X),s(Y),Z) :-
-    unary_plus(s(Y),PREV_Z,Z),
-    unary_times2(s(Y),X,PREV_Z).
-
-unary_leq(0,X) :- is_unary(X).
-unary_leq(s(X),s(Y)) :- unary_leq(X,Y).
-
-
-/**** TASK 1 ****/
+% making sure: K <= N, X*X<=N, N<=(X+1)*(X+1)
 unary_sqrt(N,K) :-
     unary_leq(K,N),
     unary_times1(K,K,P1),
@@ -38,97 +39,170 @@ unary_sqrt(N,K) :-
     unary_leq(N,P2).
 
 
+
 /**** TASK 2 ****/
+
+% for this task I made unary_times2(-,-,+) similiar to unary_times
+% function that was seen in class.
+unary_times2(0,_Y,0).
+unary_times2(s(_X),0,0).
+unary_times2(s(X),s(Y),Z) :-
+    unary_plus(s(Y),PREV_Z,Z),
+    unary_times2(s(Y),X,PREV_Z).
+
+% going over all unary numbers R s.t. R*K=N
 unary_divisor(N,K) :-
     unary_times2(R,K,N),
     is_unary(R).
 
 
+
 /**** Binary Rules From Class ****/
+
 binary_list([]).
 binary_list([X|Xs]) :-
             member(X,[0,1]),
             binary_list(Xs).
-binary_list(Xs,N) :-
-    length(Xs,N),
-    b_list(Xs).
 
 is_binary(X) :- binary_list(X).
 
 
+
 /**** TASK 3 ****/
+
+% base case for addition with zero
 binary_plus([],Y,Y) :- is_binary(Y).
 binary_plus([0|Xs],[],[0|Xs]) :- is_binary(Xs).
 binary_plus([1|Xs],[],[1|Xs]) :- is_binary(Xs).
 
+% addition non-zero numbers without carry
 binary_plus([0|Xs],[0|Ys],[0|Zs]) :- binary_plus(Xs,Ys,Zs).
 binary_plus([0|Xs],[1|Ys],[1|Zs]) :- binary_plus(Xs,Ys,Zs).
 binary_plus([1|Xs],[0|Ys],[1|Zs]) :- binary_plus(Xs,Ys,Zs).
 
+% addition non-zero numbers with carry
 binary_plus([1|Xs],[1|Ys],[0|Zs]) :-
     binary_plus(Xs,Ys,W),
     binary_plus(W,[1],Zs).
 
 
+
 /**** TASK 4 ****/
+
+% base case for multiplying with zero
 binary_times([],Y,[]) :- is_binary(Y).
 binary_times([X|Xs],[],[]) :- is_binary([X|Xs]).
+
+% for 0 LSBF multiply last calucaltion by 2
 binary_times([0|Xs],Y,Z) :-
     binary_times(Xs,Y,PREV_Z),
     binary_plus(PREV_Z,PREV_Z,Z).
 
+% for 1 LSBF calculate like 0 is the LSBF and then add Y.
 binary_times([1|Xs],Y,Z) :-
     binary_times([0|Xs],Y,PREV_Z),
     binary_plus(PREV_Z,Y,Z).
 
 
+
 /**** TASK 5 ****/
-/*  check if N can be divisible by 2 or by some odd integer,
-    meaning, starting from 3 until sqrt(X). */
+
+% base case
 is_prime(2).
 is_prime(3).
+
+% check if N can be divisible by 2 or by some odd integer,
+% meaning, starting from N>3.
 is_prime(N) :-
     N > 3,
     0 =\= N mod 2,
     is_prime(N, 3).
-/* if all of the checked (smaller than sqrt(N)) numbers did not divided N,
-    N is prime. */
-is_prime(N,ODD_INT) :- sqrt(N) >= ODD_INT.
-/* continue checking for larger odd numbers that are smaller than sqrt(N) */
+
+% if all of the checked (smaller than sqrt(N)) numbers have not
+% divided N, N is prime.
+is_prime(N,ODD_INT) :- sqrt(N) < ODD_INT.
+
+% continue checking for larger odd numbers that are smaller than sqrt(N)
 is_prime(N,ODD_INT) :-
-    sqrt(N) < ODD_INT,
+    sqrt(N) > ODD_INT,
     0 =\= N mod ODD_INT,
     is_prime(N,ODD_INT+2).
 
+
+
 /**** TASK 6 ****/
+
+% base case
 right_prime(N) :-
     N < 10,
     is_prime(N).
 
+% check after division by 10 and keep checking
 right_prime(N) :-
-    N >= 10,
+    N > 10,
     is_prime(N),
-    right_prime(N // 10).
+    N_LEFT is N // 10,
+    right_prime(N_LEFT).
+
+
 
 /**** TASK 7 ****/
+
+% base case
 right_prime_gen(2).
+
+% check from value 3
 right_prime_gen(N) :-
-    right_prime_gen(N,3).
+    right_prime_gen(N,3),
+    right_prime(N).
+
+%
+right_prime_gen(N,N).
 right_prime_gen(N,ODD_INT) :-
-    N is ODD_INT,
-    right_prime(ODD_INT).
-right_prime_gen(N,ODD_INT) :-
-    right_prime_gen(N,ODD_INT+2).
+    NEXT_INT is ODD_INT + 2,
+    right_prime_gen(N,NEXT_INT).
 
 
 
 /**** TASK 8 ****/
-tree(nil).
-tree(nil,_,nil).
-tree(tree(_),_,tree(_)).
 
-preorder_tree(tree(nil,N,nil),[N]).
-preorder_tree(tree(L,N,R),[N|Ns]) :-
-    preorder_tree(L, Ls),
-    preorder_tree(R, Rs),
-    append(Rs,Ls,Ns).
+% split main problem to left sub-tree and right sub-tree.
+% the inorder_split will extract the 'DATA' element from the inorder
+% list. all the elements left from the data will be in the left
+% sub-tree, and all the elements right from the data will be in the
+% right sub-tree
+inorder_split(INORDER,DATA,LEFT_LIST,RIGHT_LIST) :-
+    append([DATA],RIGHT_LIST,TEMP),
+    append(LEFT_LIST,TEMP,INORDER).
+
+% the preorder_split already excludes the 'DATA' element from the
+% preorder list. the length of the inorder splited lists and preorder
+% splited lists should be the same. so we only need to split the
+% preorder list by the same length as the new splited inorder lists.
+preorder_split(PREORDER,LEFT_LIST_LENGTH,LEFT_LIST,RIGHT_LIST) :-
+    append(LEFT_LIST,RIGHT_LIST,PREORDER),
+    length(LEFT_LIST,LEFT_LIST_LENGTH).
+
+gentree([],[],nil).
+gentree([DATA|PREORDER],INORDER,tree(LEFT,DATA,RIGHT)):-
+    inorder_split(INORDER,DATA,LEFT_INORDER,RIGHT_INORDER),
+    length(LEFT_INORDER,LEFT_LIST_LENGTH),
+    preorder_split(PREORDER,LEFT_LIST_LENGTH,LEFT_PREORDER,RIGHT_PREORDER),
+    gentree(LEFT_PREORDER,LEFT_INORDER,LEFT),
+    gentree(RIGHT_PREORDER,RIGHT_INORDER,RIGHT).
+
+
+
+/**** TASK 9 ****/
+
+evaluate([A],A).
+% if the operation is '+', postpond the evaluation, '*' has higher
+% priority.
+evaluate([A,'+',B|REST],VALUE) :-
+    evaluate([B|REST],CURR_VALUE),
+    VALUE is A + CURR_VALUE.
+% if the operation is '*', calculate evaluation.
+evaluate([A,'*',B|REST],VALUE) :-
+    CURR_VALUE is A * B,
+    append([CURR_VALUE],REST,EVAL),
+    evaluate(EVAL,VALUE).
