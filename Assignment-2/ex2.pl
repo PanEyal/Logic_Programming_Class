@@ -120,11 +120,34 @@ add(Xs, Ys, Zs, CNF) :-
 
 /* ---------------------------- TASK 2 ---------------------------- */
 
-pad(Ys, Ys).
-pad(Ys, PaddedYs) :-
-    append(Ys,[-1],PaddedYs1),
-    pad(PaddedYs1, PaddedYs).
+pad(Ys, Size, Ys) :-
+    Size < 0,!.
 
-leq(Xs,Ys,CNF) :-
-    pad(Ys, PaddedYs),
-    add(Xs, _, -1, PaddedYs, CNF).
+pad(Ys, Size, PaddedYs) :-
+    append(Ys, [-1], TempYs),
+    pad(TempYs, Size - 1, PaddedYs).
+
+leq(Xs, Ys, CNF) :-
+    length(Xs, Xs_Size),
+    length(Ys, Ys_Size),
+    pad(Ys, (Xs_Size - Ys_Size) +2, PaddedYs),
+    add(Xs, _, PaddedYs, CNF),!.
+
+lt(Xs, Ys, CNF) :-
+    add(Xs, [1], Ws, CNF1),
+    leq(Ws, Ys, CNF2),
+    append(CNF1, CNF2, CNF),!.
+
+/* ---------------------------- TASK 3 ---------------------------- */
+
+sum(PREV, [], PREV, []).
+
+sum(PREV, [Xs|REST], Zs, CNF) :-
+    add(PREV, Xs, Ws, CNF1),
+    sum(Ws, REST, Zs, CNF2),
+    append(CNF1, CNF2, CNF).
+
+sum(LON, Zs, CNF) :-
+    sum([-1], LON, Zs, CNF),!.
+
+/* ---------------------------- TASK 4 ---------------------------- */
