@@ -114,7 +114,9 @@ add([X|Xs], [Y|Ys], Cin, [Z|Zs], CNF) :-
     append(CNF1, CNF2, CNF).
 
 add(Xs, Ys, Zs, CNF) :-
-    add(Xs, Ys, -1, Zs, CNF).
+    append(Xs, [-1], PaddedXs),
+    append(Ys, [-1], PaddedYs),
+    add(PaddedXs, PaddedYs, -1, Zs, CNF).
 
 /* ---------------------------- TASK 2 ---------------------------- */
 
