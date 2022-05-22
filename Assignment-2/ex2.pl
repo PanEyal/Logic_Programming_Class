@@ -92,18 +92,18 @@ full_adder(X, Y, Cin, Z, Cout, CNF) :-
             [-X,-Y,-Cin, Z,-Cout]].
 
 % Base case for X=0, Y=0
-add([-1], [-1], Cin, [Z,Cout], CNF) :-
-    full_adder(-1, -1, Cin, Z, Cout, CNF).
+add([X], [Y], Cin, [Z,Cout], CNF) :-
+    full_adder(X, Y, Cin, Z, Cout, CNF).
 
 % Case for X=0 Y!=0
-add([-1], [Y|Ys], Cin, [Z|Zs], CNF) :-
-    full_adder(-1, Y, Cin, Z, Cout, CNF1),
+add([X], [Y|Ys], Cin, [Z|Zs], CNF) :-
+    full_adder(X, Y, Cin, Z, Cout, CNF1),
     add([-1], Ys, Cout, Zs, CNF2),
     append(CNF1, CNF2, CNF).
 
 % Case for X!=0 Y=0
-add([X|Xs], [-1], Cin, [Z|Zs], CNF) :-
-    full_adder(X, -1, Cin, Z, Cout, CNF1),
+add([X|Xs], [Y], Cin, [Z|Zs], CNF) :-
+    full_adder(X, Y, Cin, Z, Cout, CNF1),
     add(Xs, [-1], Cout, Zs, CNF2),
     append(CNF1, CNF2, CNF).
 
@@ -114,14 +114,12 @@ add([X|Xs], [Y|Ys], Cin, [Z|Zs], CNF) :-
     append(CNF1, CNF2, CNF).
 
 add(Xs, Ys, Zs, CNF) :-
-    append(Xs, [-1], PaddedXs),
-    append(Ys, [-1], PaddedYs),
-    add(PaddedXs, PaddedYs, -1, Zs, CNF).
+    add(Xs, Ys, -1, Zs, CNF).
 
 /* ---------------------------- TASK 2 ---------------------------- */
 
 pad(Ys, Size, Ys) :-
-    Size < 0,!.
+    Size =< 0,!.
 
 pad(Ys, Size, PaddedYs) :-
     append(Ys, [-1], TempYs),
@@ -130,13 +128,13 @@ pad(Ys, Size, PaddedYs) :-
 leq(Xs, Ys, CNF) :-
     length(Xs, Xs_Size),
     length(Ys, Ys_Size),
-    pad(Ys, (Xs_Size - Ys_Size) +2, PaddedYs),
-    add(Xs, _, PaddedYs, CNF),!.
+    pad(Ys, (Xs_Size - Ys_Size) + 1, PaddedYs),
+    add(Xs, _, PaddedYs, CNF).
 
 lt(Xs, Ys, CNF) :-
-    add(Xs, [1], Ws, CNF1),
+    add([1], Xs, Ws, CNF1),
     leq(Ws, Ys, CNF2),
-    append(CNF1, CNF2, CNF),!.
+    append(CNF1, CNF2, CNF).
 
 /* ---------------------------- TASK 3 ---------------------------- */
 
@@ -146,8 +144,8 @@ sum(PREV, [Xs|REST], Zs, CNF) :-
     add(PREV, Xs, Ws, CNF1),
     sum(Ws, REST, Zs, CNF2),
     append(CNF1, CNF2, CNF).
-
+%I need to make Xs=[_,_,_], Ys=[-1], lt(Xs,Ys,Cnf), sat(Cnf). WORK!!!!
 sum(LON, Zs, CNF) :-
-    sum([-1], LON, Zs, CNF),!.
+    sum([-1], LON, Zs, CNF).
 
 /* ---------------------------- TASK 4 ---------------------------- */
