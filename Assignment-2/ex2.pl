@@ -118,23 +118,26 @@ add(Xs, Ys, Zs, CNF) :-
 
 /* ---------------------------- TASK 2 ---------------------------- */
 
-pad(Ys, Size, Ys) :-
+pad(Ns, Size, Ns) :-
     Size =< 0,!.
 
-pad(Ys, Size, PaddedYs) :-
-    append(Ys, [-1], TempYs),
-    pad(TempYs, Size - 1, PaddedYs).
+pad(Ns, Size, PaddedNs) :-
+    append(Ns, [-1], TempNs),
+    pad(TempNs, Size - 1, PaddedNs).
 
 leq(Xs, Ys, CNF) :-
     length(Xs, Xs_Size),
     length(Ys, Ys_Size),
     pad(Ys, (Xs_Size - Ys_Size) + 1, PaddedYs),
-    add(Xs, _, PaddedYs, CNF).
+    add(Xs, _, PaddedYs, CNF),!.
+
+increment(Xs, Zs, CNF) :-
+    add(Xs, [1], Zs, CNF).
 
 lt(Xs, Ys, CNF) :-
-    add([1], Xs, Ws, CNF1),
+    increment(Xs, Ws, CNF1),
     leq(Ws, Ys, CNF2),
-    append(CNF1, CNF2, CNF).
+    append(CNF1, CNF2, CNF),!.
 
 /* ---------------------------- TASK 3 ---------------------------- */
 
@@ -144,7 +147,7 @@ sum(PREV, [Xs|REST], Zs, CNF) :-
     add(PREV, Xs, Ws, CNF1),
     sum(Ws, REST, Zs, CNF2),
     append(CNF1, CNF2, CNF).
-%I need to make Xs=[_,_,_], Ys=[-1], lt(Xs,Ys,Cnf), sat(Cnf). WORK!!!!
+
 sum(LON, Zs, CNF) :-
     sum([-1], LON, Zs, CNF).
 
