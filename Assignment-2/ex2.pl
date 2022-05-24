@@ -93,28 +93,28 @@ full_adder(X, Y, Cin, Z, Cout, CNF) :-
 
 % Base case for X=0, Y=0
 add([X], [Y], Cin, [Z,Cout], CNF) :-
-    full_adder(X, Y, Cin, Z, Cout, CNF).
+    full_adder(X, Y, Cin, Z, Cout, CNF),!.
 
 % Case for X=0 Y!=0
 add([X], [Y|Ys], Cin, [Z|Zs], [[-N]|CNF]) :-
     full_adder(X, Y, Cin, Z, Cout, CNF1),
     add([N], Ys, Cout, Zs, CNF2),
-    append(CNF1, CNF2, CNF).
+    append(CNF1, CNF2, CNF),!.
 
 % Case for X!=0 Y=0
 add([X|Xs], [Y], Cin, [Z|Zs], [[-N]|CNF]) :-
     full_adder(X, Y, Cin, Z, Cout, CNF1),
     add(Xs, [N], Cout, Zs, CNF2),
-    append(CNF1, CNF2, CNF).
+    append(CNF1, CNF2, CNF),!.
 
 % Case for X!=0 Y!=0
 add([X|Xs], [Y|Ys], Cin, [Z|Zs], CNF) :-
     full_adder(X, Y, Cin, Z, Cout, CNF1),
     add(Xs, Ys, Cout, Zs, CNF2),
-    append(CNF1, CNF2, CNF).
+    append(CNF1, CNF2, CNF),!.
 
 add(Xs, Ys, Zs, [[-N]|CNF]) :-
-    add(Xs, Ys, N, Zs, CNF).
+    add(Xs, Ys, N, Zs, CNF),!.
 
 /* ---------------------------- TASK 2 ---------------------------- */
 
@@ -142,7 +142,7 @@ lt(Xs, Ys, CNF) :-
 
 /* ---------------------------- TASK 3 ---------------------------- */
 
-sum(PREV, [], PREV, []).
+sum(PREV, [], PREV, []) :- !.
 
 sum(PREV, [Xs|REST], Zs, CNF) :-
     add(PREV, Xs, Ws, CNF1),
@@ -157,7 +157,7 @@ sum(LON, Zs, [[-N]|CNF]) :-
 shift(Xs, [N|Xs], [[-N]]).
 
 list_shift([Xs], [Zs], CNF) :-
-    shift(Xs, Zs, CNF).
+    shift(Xs, Zs, CNF),!.
 
 list_shift([Xs|OLD_LON], [Zs|LON], CNF) :-
     shift(Xs, Zs, CNF),
