@@ -200,6 +200,14 @@ times(Xs, Ys, Zs, CNF) :-
 
 /* ---------------------------- TASK 5 ---------------------------- */
 
+power(0, _Xs, [P], [[P]]):-!.
+
+power(N, Xs, Zs, CNF) :-
+    New_N is (N - 1),
+    power(New_N, Xs, PREV_Zs, CNF1),
+    times(Xs, PREV_Zs, Zs, CNF2),
+    append(CNF1, CNF2, CNF).
+
 /*
 Task 1
     Xs=[1,_], Ys=[_,_,_], add(Xs,Ys,Zs,Cnf), sat(Cnf).
@@ -214,8 +222,7 @@ Task 4
     Xs=[_,_], Ys=[_,_,_], times(Xs,Ys,Zs,Cnf),sat([Xs,Ys|Cnf]).
     Zs=[1,1,1,1], PaddedZs=[1,1,1,1,-1,-1,-1,-1],length(Xs,4), length(Ys,4), times(Xs,Ys,PaddedZs,Cnf), sat(Cnf).
 
-length(Xs, Xs_Size), length(Ws, Ws_Size), pad(Xs, (Ws_Size - Xs_Size) + 1, PaddedXs), add([1], Ws, PaddedXs, CNF1),
-
-length(Xs, Xs_Size), length(Zs, Zs_Size), pad(Xs, (Zs_Size - Xs_Size) + 1, PaddedXs), add([1], Zs, PaddedXs, CNF)
+Task 5
+    Xs=[_,_,_], power(3,Xs,Zs,Cnf), sat([Xs|Cnf]).
 
 */
