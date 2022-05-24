@@ -154,21 +154,31 @@ sum(LON, Zs, [[-N]|CNF]) :-
 
 /* ---------------------------- TASK 4 ---------------------------- */
 
-% base case for multiplying with zero.
-times(Zero, _Y, [-1], CNF) :- leq(Zero, [-1], CNF).
+shift(Xs, [N|Xs], [[-N]]).
 
-% for 0 LSBF multiply last calucaltion by 2.
-times([-1|Xs], Ys, Zs, CNF) :-
-    lt([-1],Xs,CNF1),
-    times(Xs, Ys, PREV_Z, CNF2),
-    add(PREV_Z, PREV_Z, Zs, CNF3),
+list_shift([Xs], [Zs], CNF) :-
+    shift(Xs, Zs, CNF).
+
+list_shift([Xs|OLD_LON], [Zs|LON], CNF) :-
+    shift(Xs, Zs, CNF),
+    list_shift(OLD_LON, LON, CNF).
+
+partial_prod([N], _Ys, [N], [[-N]]).
+partial_prod([P], Ys, Ys, [[P]]).
+
+build_list([X], Ys, [Zs], CNF) :-
+    partial_prod([X], Ys, Zs, CNF).
+
+build_list([X|Xs], Ys, [Zs|LON], CNF) :-
+    partial_prod([X], Ys, Zs, CNF1),
+    build_list(Xs, Ys, PREV_LON, CNF2),
+    list_shift(PREV_LON, LON, CNF3),
     append(CNF1, CNF2, CNF12),
     append(CNF12, CNF3, CNF).
 
-% for 1 LSBF calculate like 0 is the LSBF and then add Y.
-times([1|Xs], Ys, Zs, CNF) :-
-    times([-1|Xs], Ys, PREV_Zs, CNF1),
-    add(PREV_Zs, Ys, Zs, CNF2),
+times(Xs, Ys, Zs, CNF) :-
+    build_list(Xs, Ys, LON, CNF1),
+    sum(LON, Zs, CNF2),
     append(CNF1, CNF2, CNF).
 
 /* ---------------------------- TASK 5 ---------------------------- */
