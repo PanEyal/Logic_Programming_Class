@@ -96,15 +96,15 @@ add([X], [Y], Cin, [Z,Cout], CNF) :-
     full_adder(X, Y, Cin, Z, Cout, CNF).
 
 % Case for X=0 Y!=0
-add([X], [Y|Ys], Cin, [Z|Zs], CNF) :-
+add([X], [Y|Ys], Cin, [Z|Zs], [[-N]|CNF]) :-
     full_adder(X, Y, Cin, Z, Cout, CNF1),
-    add([-1], Ys, Cout, Zs, CNF2),
+    add([N], Ys, Cout, Zs, CNF2),
     append(CNF1, CNF2, CNF).
 
 % Case for X!=0 Y=0
-add([X|Xs], [Y], Cin, [Z|Zs], CNF) :-
+add([X|Xs], [Y], Cin, [Z|Zs], [[-N]|CNF]) :-
     full_adder(X, Y, Cin, Z, Cout, CNF1),
-    add(Xs, [-1], Cout, Zs, CNF2),
+    add(Xs, [N], Cout, Zs, CNF2),
     append(CNF1, CNF2, CNF).
 
 % Case for X!=0 Y!=0
@@ -113,26 +113,27 @@ add([X|Xs], [Y|Ys], Cin, [Z|Zs], CNF) :-
     add(Xs, Ys, Cout, Zs, CNF2),
     append(CNF1, CNF2, CNF).
 
-add(Xs, Ys, Zs, CNF) :-
-    add(Xs, Ys, -1, Zs, CNF).
+add(Xs, Ys, Zs, [[-N]|CNF]) :-
+    add(Xs, Ys, N, Zs, CNF).
 
 /* ---------------------------- TASK 2 ---------------------------- */
 
-pad(Ns, Size, Ns) :-
+pad(Xs, Size, Xs, []) :-
     Size =< 0,!.
 
-pad(Ns, Size, PaddedNs) :-
-    append(Ns, [-1], TempNs),
-    pad(TempNs, Size - 1, PaddedNs).
+pad(Xs, Size, PaddedXs, [[-N]|CNF]) :-
+    append(Xs, [N], TempXs),
+    pad(TempXs, (Size - 1), PaddedXs, CNF).
 
 leq(Xs, Ys, CNF) :-
     length(Xs, Xs_Size),
     length(Ys, Ys_Size),
-    pad(Ys, (Xs_Size - Ys_Size) + 1, PaddedYs),
-    add(Xs, _, PaddedYs, CNF),!.
+    pad(Ys, (Xs_Size - Ys_Size) + 1, PaddedYs, CNF1),
+    add(Xs, _, PaddedYs, CNF2),
+    append(CNF1, CNF2, CNF),!.
 
-increment(Xs, Zs, CNF) :-
-    add(Xs, [1], Zs, CNF).
+increment(Xs, Zs, [[P]|CNF]) :-
+    add(Xs, [P], Zs, CNF),!.
 
 lt(Xs, Ys, CNF) :-
     increment(Xs, Ws, CNF1),
@@ -148,8 +149,8 @@ sum(PREV, [Xs|REST], Zs, CNF) :-
     sum(Ws, REST, Zs, CNF2),
     append(CNF1, CNF2, CNF).
 
-sum(LON, Zs, CNF) :-
-    sum([-1], LON, Zs, CNF).
+sum(LON, Zs, [[-N]|CNF]) :-
+    sum([N], LON, Zs, CNF).
 
 /* ---------------------------- TASK 4 ---------------------------- */
 
