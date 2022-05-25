@@ -190,17 +190,15 @@ times(Xs, Ys, Zs, CNF) :-
     sum(LON, Zs, CNF2),
 	append(CNF1, CNF2, CNF),!.
 
+/* ---------------------------- TASK 5 ---------------------------- */
 
-% % base case for multiplying with zero.
-% times(Zero, _Y, [-1], CNF) :- leq(Zero, [-1], CNF).
+power(0, _Xs, [1], []) :- !.
 
-% % for 0 LSBF multiply last calucaltion by 2.
-% times([-1|Xs], Ys, Zs, CNF) :-
-%     lt([-1],Xs,CNF1),
-%     times(Xs, Ys, PREV_Z, CNF2),
-%     add(PREV_Z, PREV_Z, Zs, CNF3),
-%     append(CNF1, CNF2, CNF12),
-%     append(CNF12, CNF3, CNF).
+power(PREV_N, Xs, Zs, CNF) :-
+    N is (PREV_N - 1),
+    power(N, Xs, PREV_Zs, CNF1),
+    times(Xs, PREV_Zs, Zs, CNF2),
+    append(CNF1, CNF2, CNF),!.
 
 % % for 1 LSBF calculate like 0 is the LSBF and then add Y.
 % times([1|Xs], Ys, Zs, CNF) :-
