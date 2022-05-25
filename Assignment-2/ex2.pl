@@ -164,32 +164,32 @@ sum(LON, Zs, CNF) :-
 
 /* ---------------------------- TASK 4 ---------------------------- */
 
-shift(Xs, [N|Xs], [[-N]]).
+bit_bit_prod(X, Y, Z, CNF):-
+    CNF =  [[  X, -Z],
+            [  Y, -Z],
+            [ -X, -Y,  Z]],!.
 
-list_shift([Xs], [Zs], CNF) :-
-    shift(Xs, Zs, CNF),!.
+bit_bin_prod(X, [Y], [Z], CNF) :-
+    bit_bit_prod(X, Y, Z, CNF),!.
 
-list_shift([Xs|OLD_LON], [Zs|LON], CNF) :-
-    shift(Xs, Zs, CNF),
-    list_shift(OLD_LON, LON, CNF).
+bit_bin_prod(X, [Y|Ys], [Z|Zs], CNF) :-
+    bit_bit_prod(X, Y, Z, CNF1),
+    bit_bin_prod(X, Ys, Zs, CNF2),
+    append(CNF1, CNF2, CNF),!.
 
-partial_prod([N], _Ys, [N], [[-N]]).
-partial_prod([P], Ys, Ys, [[P]]).
+builld_times_list([X], Ys, [Zs], CNF) :-
+	bit_bin_prod(X, Ys, Zs, CNF),!.
 
-build_list([X], Ys, [Zs], CNF) :-
-    partial_prod([X], Ys, Zs, CNF).
-
-build_list([X|Xs], Ys, [Zs|LON], CNF) :-
-    partial_prod([X], Ys, Zs, CNF1),
-    build_list(Xs, Ys, PREV_LON, CNF2),
-    list_shift(PREV_LON, LON, CNF3),
-    append(CNF1, CNF2, CNF12),
-    append(CNF12, CNF3, CNF).
+builld_times_list([X|Xs], Ys, [Zs|LON], CNF) :-
+	bit_bin_prod(X, Ys, Zs, CNF1),
+	builld_times_list(Xs, [-1|Ys], LON, CNF2),
+	append(CNF1, CNF2, CNF),!.
 
 times(Xs, Ys, Zs, CNF) :-
-    build_list(Xs, Ys, LON, CNF1),
+	builld_times_list(Xs, Ys, LON, CNF1),
     sum(LON, Zs, CNF2),
-    append(CNF1, CNF2, CNF).
+	append(CNF1, CNF2, CNF),!.
+
 
 % % base case for multiplying with zero.
 % times(Zero, _Y, [-1], CNF) :- leq(Zero, [-1], CNF).
