@@ -11,85 +11,82 @@ user:file_search_path(xxxx, 'C:/Users/paney/Documents/Studies/Logic_Programming_
 
 /*
 ---- Full Adder Truth Table ----
-    X  Y Cin |  Z Cout | Value
-_____________|_________|________
-    0  0  0  |  0   0  |   T
-    0  0  0  |  1   0  |   F
-    0  0  0  |  0   1  |   F
-    0  0  0  |  1   1  |   F
-             |         |
-    1  0  0  |  0   0  |   F
-    1  0  0  |  1   0  |   T
-    1  0  0  |  0   1  |   F
-    1  0  0  |  1   1  |   F
-             |         |
-    0  1  0  |  0   0  |   F
-    0  1  0  |  1   0  |   T
-    0  1  0  |  0   1  |   F
-    0  1  0  |  1   1  |   F
-             |         |
-    1  1  0  |  0   0  |   F
-    1  1  0  |  1   0  |   F
-    1  1  0  |  0   1  |   T
-    1  1  0  |  1   1  |   F
-             |         |
-    0  0  1  |  0   0  |   F
-    0  0  1  |  1   0  |   T
-    0  0  1  |  0   1  |   F
-    0  0  1  |  1   1  |   F
-             |         |
-    1  0  1  |  0   0  |   F
-    1  0  1  |  1   0  |   F
-    1  0  1  |  0   1  |   T
-    1  0  1  |  1   1  |   F
-             |         |
-    0  1  1  |  0   0  |   F
-    0  1  1  |  1   0  |   F
-    0  1  1  |  0   1  |   T
-    0  1  1  |  1   1  |   F
-             |         |
-    1  1  1  |  0   0  |   F
-    1  1  1  |  1   0  |   F
-    1  1  1  |  0   1  |   F
-    1  1  1  |  1   1  |   T
-             |         |
+    X  Y Cin |  Z  | Value
+_____________|_____|________
+    0  0  0  |  0  |   T
+    0  0  0  |  1  |   F
+             |     |
+    1  0  0  |  0  |   F
+    1  0  0  |  1  |   T
+             |     |
+    0  1  0  |  0  |   F
+    0  1  0  |  1  |   T
+             |     |
+    1  1  0  |  0  |   T
+    1  1  0  |  1  |   F
+             |     |
+    0  0  1  |  0  |   F
+    0  0  1  |  1  |   T
+             |     |
+    1  0  1  |  0  |   T
+    1  0  1  |  1  |   F
+             |     |
+    0  1  1  |  0  |   T
+    0  1  1  |  1  |   F
+             |     |
+    1  1  1  |  0  |   F
+    1  1  1  |  1  |   T
+             |     |
+
+    X  Y Cin |  Cout | Value
+_____________|_______|________
+    0  0  0  |   0   |   T
+    0  0  0  |   1   |   F
+             |       |
+    1  0  0  |   0   |   T
+    1  0  0  |   1   |   F
+             |       |
+    0  1  0  |   0   |   T
+    0  1  0  |   1   |   F
+             |       |
+    1  1  0  |   0   |   F
+    1  1  0  |   1   |   T
+             |       |
+    0  0  1  |   0   |   T
+    0  0  1  |   1   |   F
+             |       |
+    1  0  1  |   0   |   F
+    1  0  1  |   1   |   T
+             |       |
+    0  1  1  |   0   |   F
+    0  1  1  |   1   |   T
+             |       |
+    1  1  1  |   0   |   F
+    1  1  1  |   1   |   T
+             |       |
 
 By negating all the false values rows, we can convert from DNF to CNF.
 Therefore the CNF for the full adder is:
 
 */
 full_adder(X, Y, Cin, Z, Cout, CNF) :-
-    CNF =  [[ X, Y, Cin,-Z, Cout],
-            [ X, Y, Cin, Z,-Cout],
-            [ X, Y, Cin,-Z,-Cout],
+    CNF =  [[  X,  Y,  Cin, -Z],
+            [ -X,  Y,  Cin,  Z],
+            [  X, -Y,  Cin,  Z],
+            [ -X, -Y,  Cin, -Z],
+            [  X,  Y, -Cin,  Z],
+            [ -X,  Y, -Cin, -Z],
+            [ -X, -Y, -Cin, -Z],
+            [ -X, -Y, -Cin,  Z],
 
-            [-X, Y, Cin, Z, Cout],
-            [-X, Y, Cin, Z,-Cout],
-            [-X, Y, Cin,-Z,-Cout],
-
-            [ X,-Y, Cin, Z, Cout],
-            [ X,-Y, Cin, Z,-Cout],
-            [ X,-Y, Cin,-Z,-Cout],
-
-            [-X,-Y, Cin, Z, Cout],
-            [-X,-Y, Cin,-Z, Cout],
-            [-X,-Y, Cin,-Z,-Cout],
-
-            [ X, Y,-Cin, Z, Cout],
-            [ X, Y,-Cin, Z,-Cout],
-            [ X, Y,-Cin,-Z,-Cout],
-
-            [-X, Y,-Cin, Z, Cout],
-            [-X, Y,-Cin,-Z, Cout],
-            [-X, Y,-Cin,-Z,-Cout],
-
-            [ X,-Y,-Cin, Z, Cout],
-            [ X,-Y,-Cin,-Z, Cout],
-            [ X,-Y,-Cin,-Z,-Cout],
-
-            [-X,-Y,-Cin, Z, Cout],
-            [-X,-Y,-Cin,-Z, Cout],
-            [-X,-Y,-Cin, Z,-Cout]].
+            [  X,  Y , Cin, -Cout],
+            [ -X,  Y,  Cin, -Cout],
+            [  X, -Y,  Cin, -Cout],
+            [ -X, -Y,  Cin,  Cout],
+            [  X,  Y, -Cin, -Cout],
+            [ -X,  Y, -Cin,  Cout],
+            [  X, -Y, -Cin,  Cout],
+            [ -X, -Y, -Cin,  Cout]].
 
 % Base case for X=0, Y=0
 add([X], [Y], Cin, [Z,Cout], CNF) :-
