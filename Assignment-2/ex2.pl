@@ -191,7 +191,17 @@ times(Xs, Ys, Zs, CNF) :-
 
 power(0, _Xs, [1], []) :- !.
 
+power(1, Xs, Xs, []) :- !.
+
 power(PREV_N, Xs, Zs, CNF) :-
+    0 is (PREV_N mod 2),
+    N is (PREV_N / 2),
+    power(N, Xs, PREV_Zs, CNF1),
+    times(PREV_Zs, PREV_Zs, Zs, CNF2),
+    append(CNF1, CNF2, CNF),!.
+
+power(PREV_N, Xs, Zs, CNF) :-
+    1 is (PREV_N mod 2),
     N is (PREV_N - 1),
     power(N, Xs, PREV_Zs, CNF1),
     times(Xs, PREV_Zs, Zs, CNF2),
