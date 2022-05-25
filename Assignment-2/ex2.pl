@@ -187,7 +187,7 @@ builld_times_list([X|Xs], Ys, [Zs|LON], CNF) :-
 
 times(Xs, Ys, Zs, CNF) :-
 	builld_times_list(Xs, Ys, LON, CNF1),
-    sum(LON, Zs, CNF2),
+	sum(LON, Zs, CNF2),
 	append(CNF1, CNF2, CNF),!.
 
 /* ---------------------------- TASK 5 ---------------------------- */
@@ -200,21 +200,29 @@ power(PREV_N, Xs, Zs, CNF) :-
     times(Xs, PREV_Zs, Zs, CNF2),
     append(CNF1, CNF2, CNF),!.
 
-% % for 1 LSBF calculate like 0 is the LSBF and then add Y.
-% times([1|Xs], Ys, Zs, CNF) :-
-%     times([-1|Xs], Ys, PREV_Zs, CNF1),
-%     add(PREV_Zs, Ys, Zs, CNF2),
-%     append(CNF1, CNF2, CNF).
+/* ---------------------------- TASK 6 ---------------------------- */
 
-/* ---------------------------- TASK 5 ---------------------------- */
+build_pe_list(N, [As], [P_As], CNF) :-
+    power(N, As, P_As, CNF),!.
 
-power(0, _Xs, [P], [[P]]):-!.
+build_pe_list(N, [As|LON], [P_As|P_LON], CNF) :-
+    power(N, As, P_As, CNF1),
+    build_pe_list(N, LON, P_LON, CNF2),
+    append(CNF1, CNF2, CNF),!.
 
-power(N, Xs, Zs, CNF) :-
-    New_N is (N - 1),
-    power(New_N, Xs, PREV_Zs, CNF1),
-    times(Xs, PREV_Zs, Zs, CNF2),
-    append(CNF1, CNF2, CNF).
+powerEquation(N, M, Zs, LON, CNF) :-
+    length(LON, M),
+    build_pe_list(N, LON, P_LON, CNF1),
+    sum(P_LON, P_Zs1, CNF2),
+    power(N, Zs, P_Zs2, CNF3),
+    leq(P_Zs1, P_Zs2, CNF4),
+    leq(P_Zs2, P_Zs1, CNF5),
+    append(CNF1, CNF2, CNF12),
+    append(CNF12, CNF3, CNF123),
+    append(CNF123, CNF4, CNF1234),
+    append(CNF1234, CNF5, CNF).
+
+
 
 /*
 Task 1
@@ -232,5 +240,8 @@ Task 4
 
 Task 5
     Xs=[_,_,_], power(3,Xs,Zs,Cnf), sat([Xs|Cnf]).
+
+Task 6
+    Zs=[_,_,_], powerEquation(2,2,Zs,List,Cnf), sat([Zs|Cnf]).
 
 */
