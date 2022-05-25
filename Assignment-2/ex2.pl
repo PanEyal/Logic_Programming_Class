@@ -118,25 +118,35 @@ add(Xs, Ys, Zs, [[-N]|CNF]) :-
 
 /* ---------------------------- TASK 2 ---------------------------- */
 
-pad(Xs, Size, Xs, []) :-
-    Size =< 0,!.
+pad(Xs, Size, Xs) :-
+    length(Xs, Xs_Size),
+    Xs_Size == Size,!.
 
-pad(Xs, Size, PaddedXs, [[-N]|CNF]) :-
-    append(Xs, [N], TempXs),
-    pad(TempXs, (Size - 1), PaddedXs, CNF).
+pad(Xs, Size, PaddedXs) :-
+    length(Xs, Xs_Size),
+    Xs_Size < Size,
+    append(Xs, [-1], TempXs),
+    pad(TempXs, Size, PaddedXs),!.
 
 leq(Xs, Ys, CNF) :-
     length(Xs, Xs_Size),
     length(Ys, Ys_Size),
-    pad(Ys, (Xs_Size - Ys_Size) + 1, PaddedYs, CNF1),
-    add(Xs, _, PaddedYs, CNF2),
-    append(CNF1, CNF2, CNF),!.
+    Xs_Size < Ys_Size,
+    Ws_Size is (Ys_Size - 1),
+    length(Ws, Ws_Size),
+    add(Xs, Ws, Ys, CNF),!.
 
-increment(Xs, Zs, [[P]|CNF]) :-
-    add(Xs, [P], Zs, CNF),!.
+leq(Xs, Ys, CNF) :-
+    length(Xs, Xs_Size),
+    length(Ys, Ys_Size),
+    Xs_Size >= Ys_Size,
+    length(Ws, Ys_Size),
+    PaddedYs_Size is (Xs_Size + 1),
+    pad(Ys, PaddedYs_Size, PaddedYs),
+    add(Xs, Ws, PaddedYs, CNF),!.
 
 lt(Xs, Ys, CNF) :-
-    increment(Xs, Ws, CNF1),
+    add(Xs, [1], Ws, CNF1),
     leq(Ws, Ys, CNF2),
     append(CNF1, CNF2, CNF),!.
 
