@@ -152,15 +152,15 @@ lt(Xs, Ys, CNF) :-
 
 /* ---------------------------- TASK 3 ---------------------------- */
 
-sum(PREV, [], PREV, []) :- !.
+sum(Zs, [], Zs, []) :- !.
 
-sum(PREV, [Xs|REST], Zs, CNF) :-
-    add(PREV, Xs, Ws, CNF1),
-    sum(Ws, REST, Zs, CNF2),
-    append(CNF1, CNF2, CNF).
+sum(PREV_Zs, [Xs|REST], Zs, CNF) :-
+    add(PREV_Zs, Xs, CURR_Zs, CNF1),
+    sum(CURR_Zs, REST, Zs, CNF2),
+    append(CNF1, CNF2, CNF),!.
 
-sum(LON, Zs, [[-N]|CNF]) :-
-    sum([N], LON, Zs, CNF).
+sum(LON, Zs, CNF) :-
+    sum([-1], LON, Zs, CNF),!.
 
 /* ---------------------------- TASK 4 ---------------------------- */
 
