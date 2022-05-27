@@ -113,7 +113,7 @@ add([X|Xs], [Y|Ys], Cin, [Z|Zs], CNF) :-
 add(Xs, Ys, Zs, [[-N]|CNF]) :-
     add(Xs, Ys, N, Zs, CNF),!.
 
-/* ---------------------------- TASK 2 ---------------------------- 
+/* ---------------------------- TASK 2 ----------------------------
 
 ---- Less Equal/Than Truth Table ----
 
@@ -171,11 +171,11 @@ leq([X|Xs], [Y|Ys], LEQin, LEQout, CNF) :-
     leq(Xs, Ys, LEQtemp, LEQout, CNF2),
     append(CNF1, CNF2, CNF),!.
 
-leq(Xs, Ys, [[P]|CNF]) :-
-    leq(Xs, Ys, P, P, CNF),!.
+leq(Xs, Ys, CNF) :-
+    leq(Xs, Ys, 1, 1, CNF),!.
 
-lt(Xs, Ys, [[P],[-N]|CNF]) :-
-    leq(Xs, Ys, N, P, CNF),!.
+lt(Xs, Ys, CNF) :-
+    leq(Xs, Ys, -1, 1, CNF),!.
 
 /* ---------------------------- TASK 3 ---------------------------- */
 
@@ -286,6 +286,17 @@ bins_to_decs([Xs|LOXs], [D|LOD]) :-
 
 decode(Map,Solution) :-
     bins_to_decs(Map, Solution).
+
+build_pe_dec_list(N,[As], [P_As]) :-
+    P_As is (As ** N),!.
+
+build_pe_dec_list(N, [As|LON], [P_As|P_LON]) :-
+    P_As is (As ** N),
+    build_pe_dec_list(N, LON, P_LON),!.
+
+verify(euler(N, _NumBits), [B|As]) :-
+    build_pe_dec_list(N, As, P_As),
+    P_As is (B ** N),!.
 
 solve(Instance, Solution) :-
     encode(Instance,Map,Cnf),
