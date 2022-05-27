@@ -186,8 +186,8 @@ sum(PREV_Zs, [Xs|REST], Zs, CNF) :-
     sum(CURR_Zs, REST, Zs, CNF2),
     append(CNF1, CNF2, CNF),!.
 
-sum(LON, Zs, CNF) :-
-    sum([-1], LON, Zs, CNF),!.
+sum(LON, Zs, [[-N]|CNF]) :-
+    sum([N], LON, Zs, CNF),!.
 
 /* ---------------------------- TASK 4 ---------------------------- */
 
@@ -207,9 +207,9 @@ bit_bin_prod(X, [Y|Ys], [Z|Zs], CNF) :-
 builld_times_list([X], Ys, [Zs], CNF) :-
 	bit_bin_prod(X, Ys, Zs, CNF),!.
 
-builld_times_list([X|Xs], Ys, [Zs|LON], CNF) :-
+builld_times_list([X|Xs], Ys, [Zs|LON], [[-N]|CNF]) :-
 	bit_bin_prod(X, Ys, Zs, CNF1),
-	builld_times_list(Xs, [-1|Ys], LON, CNF2),
+	builld_times_list(Xs, [N|Ys], LON, CNF2),
 	append(CNF1, CNF2, CNF),!.
 
 times(Xs, Ys, Zs, CNF) :-
