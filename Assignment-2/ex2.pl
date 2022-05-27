@@ -115,37 +115,34 @@ add(Xs, Ys, Zs, [[-N]|CNF]) :-
 
 /* ---------------------------- TASK 2 ---------------------------- */
 
-pad(Xs, Size, Xs) :-
-    length(Xs, Xs_Size),
-    Xs_Size == Size,!.
+bit_leq(X, Y, LEQin, LEQout, CNF) :-
+    CNF =  [[ X,  Y,  LEQin, -LEQout],
+            [ X,  Y, -LEQin,  LEQout],
+            [ X, -Y,  LEQout],
+            [-X,  Y, -LEQout],
+            [-X, -Y,  LEQin, -LEQout],
+            [-X, -Y, -LEQin,  LEQout]].
 
-pad(Xs, Size, PaddedXs) :-
-    length(Xs, Xs_Size),
-    Xs_Size < Size,
-    append(Xs, [-1], TempXs),
-    pad(TempXs, Size, PaddedXs),!.
+leq([], [], LEQin, LEQin, []).
 
-leq(Xs, Ys, CNF) :-
-    length(Xs, Xs_Size),
-    length(Ys, Ys_Size),
-    Xs_Size < Ys_Size,
-    Ws_Size is (Ys_Size - 1),
-    length(Ws, Ws_Size),
-    add(Xs, Ws, Ys, CNF),!.
-
-leq(Xs, Ys, CNF) :-
-    length(Xs, Xs_Size),
-    length(Ys, Ys_Size),
-    Xs_Size >= Ys_Size,
-    length(Ws, Ys_Size),
-    PaddedYs_Size is (Xs_Size + 1),
-    pad(Ys, PaddedYs_Size, PaddedYs),
-    add(Xs, Ws, PaddedYs, CNF),!.
-
-lt(Xs, Ys, CNF) :-
-    add(Xs, [1], Ws, CNF1),
-    leq(Ws, Ys, CNF2),
+leq([], [Y|Ys], LEQin, LEQout, [[-Pad_X]|CNF]) :-
+    bit_leq(Pad_X, Y, LEQin, LEQtemp, CNF1),
+    leq([], Ys, LEQtemp, LEQout, CNF2),
     append(CNF1, CNF2, CNF),!.
+
+leq([X|Xs], [], LEQin, LEQout, [[-X]|CNF]) :-
+    leq(Xs, [], LEQin, LEQout, CNF),!.
+
+leq([X|Xs], [Y|Ys], LEQin, LEQout, CNF) :-
+    bit_leq(X, Y, LEQin, LEQtemp, CNF1),
+    leq(Xs, Ys, LEQtemp, LEQout, CNF2),
+    append(CNF1, CNF2, CNF),!.
+
+leq(Xs, Ys, [[P]|CNF]) :-
+    leq(Xs, Ys, P, P, CNF),!.
+
+lt(Xs, Ys, [[P],[-N]|CNF]) :-
+    leq(Xs, Ys, N, P, CNF),!.
 
 /* ---------------------------- TASK 3 ---------------------------- */
 
