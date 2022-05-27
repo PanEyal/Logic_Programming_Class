@@ -205,40 +205,32 @@ power(N, Xs, Zs, CNF) :-
     append(CNF1, CNF2, CNF),!.
 
 /* ---------------------------- TASK 6 ---------------------------- */
-% equal([X], [Y], Cnf) :- Cnf = [[X, -Y], [-X, Y]], !.
-% equal([], Ys, Cnf) :- equal([-1], Ys, Cnf).
-% equal(Xs, [], Cnf) :- equal(Xs, [-1], Cnf).
 
-% equal([X|Xs],[Y|Ys], Cnf) :-
-% 	Cnf1 = [[X, -Y], [-X, Y]],
-% 	equal(Xs, Ys, Cnf2),
-% 	append(Cnf1, Cnf2, Cnf).
-
-build_pe_list(N, Zs, PREV_As, [As], [P_As], CNF) :-
+build_pe_list(N, Zs, [As], [P_As], CNF) :-
     length(Zs, L_Zs),
     length(As, L_Zs),
     lt(As, Zs, CNF1),
-    lt(PREV_As, As, CNF2),
-    power(N, As, P_As, CNF3),
+
+    power(N, As, P_As, CNF2),
+    append(CNF1, CNF2, CNF),!.
+
+build_pe_list(N, Zs, [As|LON], [P_As|P_LON], CNF) :-
+    length(Zs, L_Zs),
+    length(As, L_Zs),
+    lt(As, Zs, CNF1),
+
+    power(N, As, P_As, CNF2),
+    build_pe_list(N, Zs, LON, P_LON, CNF3),
     append([CNF1, CNF2, CNF3], CNF),!.
-
-build_pe_list(N, Zs, PREV_As, [As|LON], [P_As|P_LON], CNF) :-
-    length(Zs, L_Zs),
-    length(As, L_Zs),
-    lt(As, Zs, CNF1),
-    lt(PREV_As, As, CNF2),
-    power(N, As, P_As, CNF3),
-    build_pe_list(N, Zs, As, LON, P_LON, CNF4),
-    append([CNF1, CNF2, CNF3, CNF4], CNF),!.
 
 powerEquation(N, M, Zs, LON, CNF) :-
     length(LON, M),
-    build_pe_list(N, Zs, [-1], LON, P_LON, CNF1),
+    build_pe_list(N, Zs, LON, P_LON, CNF1),
     sum(P_LON, P_Zs1, CNF2),
     power(N, Zs, P_Zs2, CNF3),
-    leq(P_Zs1,P_Zs2, CNF4),
-    leq(P_Zs2,P_Zs1, CNF5),
-    append([CNF1, CNF2, CNF3, CNF4, CNF5], CNF),!.
+    leq(P_Zs1, P_Zs2, CNF4),
+    leq(P_Zs2, P_Zs1, CNF5),
+    append([CNF5, CNF4, CNF3, CNF2, CNF1], CNF),!.
 
 /* ---------------------------- TASK 7 ---------------------------- */
 
