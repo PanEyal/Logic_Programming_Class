@@ -267,6 +267,8 @@ solve(Instance, Solution) :-
     sat(Cnf),
     decode(Map,Solution).
 
+/* ------------------------------------------ */
+
 get_cnf_size(N, NumBits, A) :-
     encode(euler(N, NumBits), _Map, Cnf),
     length(Cnf, A).
