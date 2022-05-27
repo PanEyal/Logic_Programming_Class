@@ -186,8 +186,8 @@ sum(PREV_Zs, [Xs|REST], Zs, CNF) :-
     sum(CURR_Zs, REST, Zs, CNF2),
     append(CNF1, CNF2, CNF),!.
 
-sum(LON, Zs, [[-N]|CNF]) :-
-    sum([N], LON, Zs, CNF),!.
+sum(LON, Zs, CNF) :-
+    sum([-1], LON, Zs, CNF),!.
 
 /* ---------------------------- TASK 4 ---------------------------- */
 
@@ -207,9 +207,9 @@ bit_bin_prod(X, [Y|Ys], [Z|Zs], CNF) :-
 builld_times_list([X], Ys, [Zs], CNF) :-
 	bit_bin_prod(X, Ys, Zs, CNF),!.
 
-builld_times_list([X|Xs], Ys, [Zs|LON], [[-N]|CNF]) :-
+builld_times_list([X|Xs], Ys, [Zs|LON], CNF) :-
 	bit_bin_prod(X, Ys, Zs, CNF1),
-	builld_times_list(Xs, [N|Ys], LON, CNF2),
+	builld_times_list(Xs, [-1|Ys], LON, CNF2),
 	append(CNF1, CNF2, CNF),!.
 
 times(Xs, Ys, Zs, CNF) :-
@@ -224,14 +224,6 @@ power(0, _Xs, [Z], [[Z]]) :- !.
 power(1, Xs, Xs, []) :- !.
 
 power(N, Xs, Zs, CNF) :-
-    0 is (N mod 2),
-    PREV_N is (N / 2),
-    power(PREV_N, Xs, PREV_Zs, CNF1),
-    times(PREV_Zs, PREV_Zs, Zs, CNF2),
-    append(CNF1, CNF2, CNF),!.
-
-power(N, Xs, Zs, CNF) :-
-    1 is (N mod 2),
     PREV_N is (N - 1),
     power(PREV_N, Xs, PREV_Zs, CNF1),
     times(Xs, PREV_Zs, Zs, CNF2),
