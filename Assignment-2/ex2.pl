@@ -76,7 +76,7 @@ full_adder(X, Y, Cin, Z, Cout, CNF) :-
             [ -X, -Y,  Cin, -Z],
             [  X,  Y, -Cin,  Z],
             [ -X,  Y, -Cin, -Z],
-            [ -X, -Y, -Cin, -Z],
+            [  X, -Y, -Cin, -Z],
             [ -X, -Y, -Cin,  Z],
 
             [  X,  Y , Cin, -Cout],
