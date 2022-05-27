@@ -243,10 +243,46 @@ powerEquation(N, M, Zs, LON, CNF) :-
     leq(P_Zs2,P_Zs1, CNF5),
     append([CNF1, CNF2, CNF3, CNF4, CNF5], CNF),!.
 
+/* ---------------------------- TASK 7 ---------------------------- */
 
+encode(euler(N, NumBits), [Zs|LON], CNF) :-
+    M is N - 1,
+    length(Zs, NumBits),
+    powerEquation(N, M, Zs, LON, CNF).
 
+bin_to_dec(_I, [], 0).
 
-/*
+bin_to_dec(I, [1|Xs], Z) :-
+    Ipp is (I + 1),
+    bin_to_dec(Ipp, Xs, PREV_Z),
+    Z is (PREV_Z + (2 ** I)).
+
+bin_to_dec(I, [-1|Xs], Z) :-
+    Ipp is (I + 1),
+    bin_to_dec(Ipp, Xs, Z).
+
+bin_to_dec(Xs, Z) :-
+    bin_to_dec(0, Xs, Z).
+
+bins_to_decs([], []).
+
+bins_to_decs([Xs|LOXs], [D|LOD]) :-
+    bin_to_dec(Xs, D),
+    bins_to_decs(LOXs, LOD).
+
+decode(Map,Solution) :-
+    bins_to_decs(Map, Solution).
+
+solve(Instance, Solution) :-
+    encode(Instance,Map,Cnf),
+    sat(Cnf),
+    decode(Map,Solution).
+
+get_cnf_size(N, NumBits, A) :-
+    encode(euler(N, NumBits), _Map, Cnf),
+    length(Cnf, A).
+
+/*169
 Task 1
     Xs=[1,_], Ys=[_,_,_], add(Xs,Ys,Zs,Cnf), sat(Cnf).
     Zs=[1,-1,1,1], PaddedZs=[1,-1,1,1,-1], length(Xs,4), length(Ys,4), add(Xs,Ys,PaddedZs,Cnf), sat(Cnf).
@@ -265,5 +301,5 @@ Task 5
 
 Task 6
     Zs=[_,_,_], powerEquation(2,2,Zs,List,Cnf), sat([Zs|Cnf]).
-
+statistics(cputime,Time1), solve(euler(5,8), Solution), statistics(cputime,Time2), Time12 is floor(Time2-Time1).
 */
