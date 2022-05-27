@@ -113,7 +113,40 @@ add([X|Xs], [Y|Ys], Cin, [Z|Zs], CNF) :-
 add(Xs, Ys, Zs, [[-N]|CNF]) :-
     add(Xs, Ys, N, Zs, CNF),!.
 
-/* ---------------------------- TASK 2 ---------------------------- */
+/* ---------------------------- TASK 2 ---------------------------- 
+
+---- Less Equal/Than Truth Table ----
+
+    X  Y LEQin |  LEQout | Value
+_______________|_________|________
+    0  0   0   |    0    |   T
+    0  0   0   |    1    |   F
+               |         |
+    1  0   0   |    0    |   T
+    1  0   0   |    1    |   F
+               |         |
+    0  1   0   |    0    |   F
+    0  1   0   |    1    |   T
+               |         |
+    1  1   0   |    0    |   T
+    1  1   0   |    1    |   F
+               |         |
+    0  0   1   |    0    |   F
+    0  0   1   |    1    |   T
+               |         |
+    1  0   1   |    0    |   T
+    1  0   1   |    1    |   F
+               |         |
+    0  1   1   |    0    |   F
+    0  1   1   |    1    |   T
+               |         |
+    1  1   1   |    0    |   F
+    1  1   1   |    1    |   T
+               |         |
+    
+    By negating all the false values rows, we can convert from DNF to CNF.
+    Therefore the CNF for the Less Equal/Than is:
+*/
 
 bit_leq(X, Y, LEQin, LEQout, CNF) :-
     CNF =  [[ X,  Y,  LEQin, -LEQout],
