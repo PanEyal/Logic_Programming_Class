@@ -317,6 +317,8 @@ equal(Xs, Ys, Cnf) :-
 
 % Build new list of the power of each element.
 % Sum it up and compare with the power of Z
+% powerEquation also sorts LON (list of numbers) for Task 7 and 8
+% given unsorted LON into powerEquation will results in failure.
 powerEquation(N, M, Zs, LON, Cnf) :-
     length(LON, M),
     build_pe_list(N, Zs, [-1], LON, P_LON, Cnf1),
