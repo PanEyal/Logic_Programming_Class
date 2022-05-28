@@ -197,9 +197,9 @@ lt(Xs, Ys, Cnf) :-
 % Case for empty list, return the sum until now.
 sum(Zs, [], Zs, []) :- !.
 
-sum(PREV_Zs, [Xs|REST], Zs, Cnf) :-
-    add(PREV_Zs, Xs, CURR_Zs, Cnf1),
-    sum(CURR_Zs, REST, Zs, Cnf2),
+sum(ZsPrev, [Xs|Rest], Zs, Cnf) :-
+    add(ZsPrev, Xs, ZsCurr, Cnf1),
+    sum(ZsCurr, Rest, Zs, Cnf2),
     append(Cnf1, Cnf2, Cnf),!.
 
 sum(LON, Zs, Cnf) :-
@@ -241,26 +241,26 @@ power(1, Xs, Xs, []) :- !.
 
 power(N, Xs, Zs, Cnf) :-
     PREV_N is (N - 1),
-    power(PREV_N, Xs, PREV_Zs, Cnf1),
-    times(Xs, PREV_Zs, Zs, Cnf2),
+    power(PREV_N, Xs, ZsPrev, Cnf1),
+    times(Xs, ZsPrev, Zs, Cnf2),
     append(Cnf1, Cnf2, Cnf),!.
 
 /* ---------------------------- TASK 6 ---------------------------- */
 
-build_pe_list(N, Zs, PREV_As, [As], [P_As], Cnf) :-
+build_pe_list(N, Zs, AsPrev, [As], [P_As], Cnf) :-
     length(Zs, L_Zs),
     length(As, L_Zs),
     lt(As, Zs, Cnf1),
-    leq(PREV_As, As, Cnf2),
+    leq(AsPrev, As, Cnf2),
 
     power(N, As, P_As, Cnf3),
     append([Cnf1, Cnf2, Cnf3], Cnf),!.
 
-build_pe_list(N, Zs, PREV_As, [As|LON], [P_As|P_LON], Cnf) :-
+build_pe_list(N, Zs, AsPrev, [As|LON], [P_As|P_LON], Cnf) :-
     length(Zs, L_Zs),
     length(As, L_Zs),
     lt(As, Zs, Cnf1),
-    leq(PREV_As, As, Cnf2),
+    leq(AsPrev, As, Cnf2),
     
     power(N, As, P_As, Cnf3),
     build_pe_list(N, Zs, As, LON, P_LON, Cnf4),
