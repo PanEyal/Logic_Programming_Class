@@ -86,7 +86,7 @@ full_adder(X, Y, Cin, Z, Cout, CNF) :-
             [  X,  Y, -Cin, -Cout],
             [ -X,  Y, -Cin,  Cout],
             [  X, -Y, -Cin,  Cout],
-            [ -X, -Y, -Cin,  Cout]].
+            [ -X, -Y, -Cin,  Cout]],!.
 
 % Base case for X=0, Y=0
 add([X], [Y], Cin, [Z,Cout], CNF) :-
@@ -110,8 +110,8 @@ add([X|Xs], [Y|Ys], Cin, [Z|Zs], CNF) :-
     add(Xs, Ys, Cout, Zs, CNF2),
     append(CNF1, CNF2, CNF),!.
 
-add(Xs, Ys, Zs, [[-N]|CNF]) :-
-    add(Xs, Ys, N, Zs, CNF),!.
+add(Xs, Ys, Zs, CNF) :-
+    add(Xs, Ys, -1, Zs, CNF),!.
 
 /* ---------------------------- TASK 2 ----------------------------
 
@@ -158,8 +158,8 @@ bit_leq(X, Y, LEQin, LEQout, CNF) :-
 
 leq([], [], LEQin, LEQin, []).
 
-leq([], [Y|Ys], LEQin, LEQout, [[-Pad_X]|CNF]) :-
-    bit_leq(Pad_X, Y, LEQin, LEQtemp, CNF1),
+leq([], [Y|Ys], LEQin, LEQout, [[-Padded_X]|CNF]) :-
+    bit_leq(Padded_X, Y, LEQin, LEQtemp, CNF1),
     leq([], Ys, LEQtemp, LEQout, CNF2),
     append(CNF1, CNF2, CNF),!.
 
@@ -231,58 +231,60 @@ power(N, Xs, Zs, CNF) :-
 
 /* ---------------------------- TASK 6 ---------------------------- */
 
-build_pe_list(N, Zs, [As], [P_As], CNF) :-
+build_pe_list(N, Zs, PREV_As, [As], [P_As], CNF) :-
     length(Zs, L_Zs),
     length(As, L_Zs),
     lt(As, Zs, CNF1),
+    leq(PREV_As, As, CNF2),
 
-    power(N, As, P_As, CNF2),
-    append(CNF1, CNF2, CNF),!.
-
-build_pe_list(N, Zs, [As|LON], [P_As|P_LON], CNF) :-
-    length(Zs, L_Zs),
-    length(As, L_Zs),
-    lt(As, Zs, CNF1),
-
-    power(N, As, P_As, CNF2),
-    build_pe_list(N, Zs, LON, P_LON, CNF3),
+    power(N, As, P_As, CNF3),
     append([CNF1, CNF2, CNF3], CNF),!.
+
+build_pe_list(N, Zs, PREV_As, [As|LON], [P_As|P_LON], CNF) :-
+    length(Zs, L_Zs),
+    length(As, L_Zs),
+    lt(As, Zs, CNF1),
+    leq(PREV_As, As, CNF2),
+    
+    power(N, As, P_As, CNF3),
+    build_pe_list(N, Zs, As, LON, P_LON, CNF4),
+    append([CNF1, CNF2, CNF3, CNF4], CNF),!.
 
 powerEquation(N, M, Zs, LON, CNF) :-
     length(LON, M),
-    build_pe_list(N, Zs, LON, P_LON, CNF1),
+    build_pe_list(N, Zs, [-1], LON, P_LON, CNF1),
     sum(P_LON, P_Zs1, CNF2),
     power(N, Zs, P_Zs2, CNF3),
     leq(P_Zs1, P_Zs2, CNF4),
     leq(P_Zs2, P_Zs1, CNF5),
-    append([CNF5, CNF4, CNF3, CNF2, CNF1], CNF),!.
+    append([CNF1, CNF2, CNF3, CNF4, CNF5], CNF),!.
 
 /* ---------------------------- TASK 7 ---------------------------- */
 
 encode(euler(N, NumBits), [Zs|LON], CNF) :-
     M is N - 1,
     length(Zs, NumBits),
-    powerEquation(N, M, Zs, LON, CNF).
+    powerEquation(N, M, Zs, LON, CNF),!.
 
 bin_to_dec(_I, [], 0).
 
 bin_to_dec(I, [1|Xs], Z) :-
     Ipp is (I + 1),
     bin_to_dec(Ipp, Xs, PREV_Z),
-    Z is (PREV_Z + (2 ** I)).
+    Z is (PREV_Z + (2 ** I)),!.
 
 bin_to_dec(I, [-1|Xs], Z) :-
     Ipp is (I + 1),
-    bin_to_dec(Ipp, Xs, Z).
+    bin_to_dec(Ipp, Xs, Z),!.
 
 bin_to_dec(Xs, Z) :-
-    bin_to_dec(0, Xs, Z).
+    bin_to_dec(0, Xs, Z),!.
 
 bins_to_decs([], []).
 
 bins_to_decs([Xs|LOXs], [D|LOD]) :-
     bin_to_dec(Xs, D),
-    bins_to_decs(LOXs, LOD).
+    bins_to_decs(LOXs, LOD),!.
 
 decode(Map,Solution) :-
     bins_to_decs(Map, Solution).
@@ -294,14 +296,80 @@ build_pe_dec_list(N, [As|LON], [P_As|P_LON]) :-
     P_As is (As ** N),
     build_pe_dec_list(N, LON, P_LON),!.
 
+verify(euler(N, _NumBits), [_B|As]) :-
+    length(As, As_L),
+    As_L =\= (N - 1),!,
+    writeln(wrong_length).
+
 verify(euler(N, _NumBits), [B|As]) :-
     build_pe_dec_list(N, As, P_As),
-    P_As is (B ** N),!.
+    sumlist(P_As, RHS),
+    RHS =\= (B ** N),!,
+    writeln(lhs_not_equal_rhs).
+
+verify(_,_) :-
+        writeln(verified:ok).
 
 solve(Instance, Solution) :-
-    encode(Instance,Map,Cnf),
+    encode(Instance, Map, Cnf),
     sat(Cnf),
-    decode(Map,Solution).
+    decode(Map, Solution),
+    verify(Instance, Solution).
+
+/* ---------------------------- TASK 8 ---------------------------- */
+
+encode2(euler(N, NumBits), [Zs|LON], CNF) :-
+    length(Zs, NumBits),
+    powerEquation(N, N, Zs, LON, CNF),!.
+
+bin_to_dec2(_I, [], 0).
+
+bin_to_dec2(I, [1|Xs], Z) :-
+    Ipp is (I + 1),
+    bin_to_dec(Ipp, Xs, PREV_Z),
+    Z is (PREV_Z + (2 ** I)),!.
+
+bin_to_dec2(I, [-1|Xs], Z) :-
+    Ipp is (I + 1),
+    bin_to_dec(Ipp, Xs, Z),!.
+
+bin_to_dec2(Xs, Z) :-
+    bin_to_dec(0, Xs, Z),!.
+
+bins_to_decs2([], []).
+
+bins_to_decs2([Xs|LOXs], [D|LOD]) :-
+    bin_to_dec2(Xs, D),
+    bins_to_decs2(LOXs, LOD),!.
+
+decode2(Map,Solution) :-
+    bins_to_decs2(Map, Solution).
+
+build_pe_dec_list2(N,[As], [P_As]) :-
+    P_As is (As ** N),!.
+
+build_pe_dec_list2(N, [As|LON], [P_As|P_LON]) :-
+    P_As is (As ** N),
+    build_pe_dec_list2(N, LON, P_LON),!.
+
+verify2(euler(N, _NumBits), [_B|As]) :-
+    length(As, As_L),
+    As_L =\= (N - 1),!,
+    writeln("Wrong Length").
+
+verify2(euler(N, _NumBits), [B|As]) :-
+    build_pe_dec_list(N, As, P_As),
+    P_As =\= (B ** N),!,
+    writeln("LHS != RHS").
+
+verify2(_,_) :-
+        writeln(verified:ok).
+
+solve2(Instance, Solution) :-
+    encode2(Instance, Map, Cnf),
+    sat(Cnf),
+    decode2(Map, Solution),
+    verify2(Instance, Solution).
 
 /* ------------------------------------------ */
 
