@@ -65,12 +65,12 @@ _____________|_______|________
     1  1  1  |   1   |   T
              |       |
 
-By negating all the false values rows, we can convert from DNF to CNF.
-Therefore the CNF for the full adder is:
+By negating all the false values rows, we can convert from DNF to Cnf.
+Therefore the Cnf for the full adder is:
 
 */
-full_adder(X, Y, Cin, Z, Cout, CNF) :-
-    CNF =  [[  X,  Y,  Cin, -Z],
+full_adder(X, Y, Cin, Z, Cout, Cnf) :-
+    Cnf =  [[  X,  Y,  Cin, -Z],
             [ -X,  Y,  Cin,  Z],
             [  X, -Y,  Cin,  Z],
             [ -X, -Y,  Cin, -Z],
@@ -89,30 +89,30 @@ full_adder(X, Y, Cin, Z, Cout, CNF) :-
             [ -X, -Y, -Cin,  Cout]],!.
 
 % Base case for X=0, Y=0
-add([X], [Y], Cin, [Z,Cout], CNF) :-
-    full_adder(X, Y, Cin, Z, Cout, CNF),!.
+add([X], [Y], Cin, [Z,Cout], Cnf) :-
+    full_adder(X, Y, Cin, Z, Cout, Cnf),!.
 
 % Case for X=0 Y!=0
-add([X], [Y|Ys], Cin, [Z|Zs], [[-N]|CNF]) :-
-    full_adder(X, Y, Cin, Z, Cout, CNF1),
-    add([N], Ys, Cout, Zs, CNF2),
-    append(CNF1, CNF2, CNF),!.
+add([X], [Y|Ys], Cin, [Z|Zs], [[-N]|Cnf]) :-
+    full_adder(X, Y, Cin, Z, Cout, Cnf1),
+    add([N], Ys, Cout, Zs, Cnf2),
+    append(Cnf1, Cnf2, Cnf),!.
 
 % Case for X!=0 Y=0
-add([X|Xs], [Y], Cin, [Z|Zs], [[-N]|CNF]) :-
-    full_adder(X, Y, Cin, Z, Cout, CNF1),
-    add(Xs, [N], Cout, Zs, CNF2),
-    append(CNF1, CNF2, CNF),!.
+add([X|Xs], [Y], Cin, [Z|Zs], [[-N]|Cnf]) :-
+    full_adder(X, Y, Cin, Z, Cout, Cnf1),
+    add(Xs, [N], Cout, Zs, Cnf2),
+    append(Cnf1, Cnf2, Cnf),!.
 
 % Case for X!=0 Y!=0
-add([X|Xs], [Y|Ys], Cin, [Z|Zs], CNF) :-
-    full_adder(X, Y, Cin, Z, Cout, CNF1),
-    add(Xs, Ys, Cout, Zs, CNF2),
-    append(CNF1, CNF2, CNF),!.
+add([X|Xs], [Y|Ys], Cin, [Z|Zs], Cnf) :-
+    full_adder(X, Y, Cin, Z, Cout, Cnf1),
+    add(Xs, Ys, Cout, Zs, Cnf2),
+    append(Cnf1, Cnf2, Cnf),!.
 
 % For two LSB the carry in bit is 0 (-1)
-add(Xs, Ys, Zs, CNF) :-
-    add(Xs, Ys, -1, Zs, CNF),!.
+add(Xs, Ys, Zs, Cnf) :-
+    add(Xs, Ys, -1, Zs, Cnf),!.
 
 /* ---------------------------- TASK 2 ----------------------------
 
@@ -145,8 +145,8 @@ _______________|_________|________
     1  1   1   |    1    |   T
                |         |
     
-    By negating all the false values rows, we can convert from DNF to CNF.
-    Therefore the CNF for the Less Equal/Than is:
+    By negating all the false values rows, we can convert from DNF to Cnf.
+    Therefore the Cnf for the Less Equal/Than is:
 */
 
 /* 
@@ -155,8 +155,8 @@ _______________|_________|________
       was less or equal than the Y's that builds the NumBit Ys 
     - CompareOut represent if the leq property holds after the visit in the current X and Y bits.
 */
-bit_compare(X, Y, CompareIn, CompareOut, CNF) :-
-    CNF =  [[ X,  Y,  CompareIn, -CompareOut],
+bit_compare(X, Y, CompareIn, CompareOut, Cnf) :-
+    Cnf =  [[ X,  Y,  CompareIn, -CompareOut],
             [ X,  Y, -CompareIn,  CompareOut],
             [ X, -Y,  CompareOut],
             [-X,  Y, -CompareOut],
@@ -167,71 +167,71 @@ bit_compare(X, Y, CompareIn, CompareOut, CNF) :-
 compare([], [], CompareIn, CompareIn, []).
 
 % Case for |Xs|<|Ys|. Keep scanning Ys, We might need a 1 bit to be bigger than X
-compare([], [Y|Ys], CompareIn, CompareOut, [[-Padded_X]|CNF]) :-
-    bit_compare(Padded_X, Y, CompareIn, CompareTemp, CNF1),
-    compare([], Ys, CompareTemp, CompareOut, CNF2),
-    append(CNF1, CNF2, CNF),!.
+compare([], [Y|Ys], CompareIn, CompareOut, [[-Padded_X]|Cnf]) :-
+    bit_compare(Padded_X, Y, CompareIn, CompareTemp, Cnf1),
+    compare([], Ys, CompareTemp, CompareOut, Cnf2),
+    append(Cnf1, Cnf2, Cnf),!.
 
 % Case for |Xs|>|Ys|. Make sure all X's are -1
-compare([X|Xs], [], CompareIn, CompareOut, [[-X]|CNF]) :-
-    compare(Xs, [], CompareIn, CompareOut, CNF),!.
+compare([X|Xs], [], CompareIn, CompareOut, [[-X]|Cnf]) :-
+    compare(Xs, [], CompareIn, CompareOut, Cnf),!.
 
 % General Case, Scan both Xs and Ys and advance
-compare([X|Xs], [Y|Ys], CompareIn, CompareOut, CNF) :-
-    bit_compare(X, Y, CompareIn, CompareTemp, CNF1),
-    compare(Xs, Ys, CompareTemp, CompareOut, CNF2),
-    append(CNF1, CNF2, CNF),!.
+compare([X|Xs], [Y|Ys], CompareIn, CompareOut, Cnf) :-
+    bit_compare(X, Y, CompareIn, CompareTemp, Cnf1),
+    compare(Xs, Ys, CompareTemp, CompareOut, Cnf2),
+    append(Cnf1, Cnf2, Cnf),!.
 
 % Empty Xs is leq than Ys as they are equal (Sending CompareIn = 1)
 % The CompareOut needs to be 1 to make leq holds.
-leq(Xs, Ys, CNF) :-
-    compare(Xs, Ys, 1, 1, CNF),!.
+leq(Xs, Ys, Cnf) :-
+    compare(Xs, Ys, 1, 1, Cnf),!.
 
 % Empty Xs is not smaller than Ys as that they are equal (Sending CompareIn = -1)
 % The CompareOut needs to be 1 to make lt holds.
-lt(Xs, Ys, CNF) :-
-    compare(Xs, Ys, -1, 1, CNF),!.
+lt(Xs, Ys, Cnf) :-
+    compare(Xs, Ys, -1, 1, Cnf),!.
 
 /* ---------------------------- TASK 3 ---------------------------- */
 
 % Case for empty list, return the sum until now.
 sum(Zs, [], Zs, []) :- !.
 
-sum(PREV_Zs, [Xs|REST], Zs, CNF) :-
-    add(PREV_Zs, Xs, CURR_Zs, CNF1),
-    sum(CURR_Zs, REST, Zs, CNF2),
-    append(CNF1, CNF2, CNF),!.
+sum(PREV_Zs, [Xs|REST], Zs, Cnf) :-
+    add(PREV_Zs, Xs, CURR_Zs, Cnf1),
+    sum(CURR_Zs, REST, Zs, Cnf2),
+    append(Cnf1, Cnf2, Cnf),!.
 
-sum(LON, Zs, CNF) :-
-    sum([-1], LON, Zs, CNF),!.
+sum(LON, Zs, Cnf) :-
+    sum([-1], LON, Zs, Cnf),!.
 
 /* ---------------------------- TASK 4 ---------------------------- */
 
-bit_bit_prod(X, Y, Z, CNF):-
-    CNF =  [[  X, -Z],
+bit_bit_prod(X, Y, Z, Cnf):-
+    Cnf =  [[  X, -Z],
             [  Y, -Z],
             [ -X, -Y,  Z]],!.
 
-bit_bin_prod(X, [Y], [Z], CNF) :-
-    bit_bit_prod(X, Y, Z, CNF),!.
+bit_bin_prod(X, [Y], [Z], Cnf) :-
+    bit_bit_prod(X, Y, Z, Cnf),!.
 
-bit_bin_prod(X, [Y|Ys], [Z|Zs], CNF) :-
-    bit_bit_prod(X, Y, Z, CNF1),
-    bit_bin_prod(X, Ys, Zs, CNF2),
-    append(CNF1, CNF2, CNF),!.
+bit_bin_prod(X, [Y|Ys], [Z|Zs], Cnf) :-
+    bit_bit_prod(X, Y, Z, Cnf1),
+    bit_bin_prod(X, Ys, Zs, Cnf2),
+    append(Cnf1, Cnf2, Cnf),!.
 
-builld_times_list([X], Ys, [Zs], CNF) :-
-	bit_bin_prod(X, Ys, Zs, CNF),!.
+builld_times_list([X], Ys, [Zs], Cnf) :-
+	bit_bin_prod(X, Ys, Zs, Cnf),!.
 
-builld_times_list([X|Xs], Ys, [Zs|LON], CNF) :-
-	bit_bin_prod(X, Ys, Zs, CNF1),
-	builld_times_list(Xs, [-1|Ys], LON, CNF2),
-	append(CNF1, CNF2, CNF),!.
+builld_times_list([X|Xs], Ys, [Zs|LON], Cnf) :-
+	bit_bin_prod(X, Ys, Zs, Cnf1),
+	builld_times_list(Xs, [-1|Ys], LON, Cnf2),
+	append(Cnf1, Cnf2, Cnf),!.
 
-times(Xs, Ys, Zs, CNF) :-
-	builld_times_list(Xs, Ys, LON, CNF1),
-	sum(LON, Zs, CNF2),
-	append(CNF1, CNF2, CNF),!.
+times(Xs, Ys, Zs, Cnf) :-
+	builld_times_list(Xs, Ys, LON, Cnf1),
+	sum(LON, Zs, Cnf2),
+	append(Cnf1, Cnf2, Cnf),!.
 
 /* ---------------------------- TASK 5 ---------------------------- */
 
@@ -239,48 +239,48 @@ power(0, _Xs, [Z], [[Z]]) :- !.
 
 power(1, Xs, Xs, []) :- !.
 
-power(N, Xs, Zs, CNF) :-
+power(N, Xs, Zs, Cnf) :-
     PREV_N is (N - 1),
-    power(PREV_N, Xs, PREV_Zs, CNF1),
-    times(Xs, PREV_Zs, Zs, CNF2),
-    append(CNF1, CNF2, CNF),!.
+    power(PREV_N, Xs, PREV_Zs, Cnf1),
+    times(Xs, PREV_Zs, Zs, Cnf2),
+    append(Cnf1, Cnf2, Cnf),!.
 
 /* ---------------------------- TASK 6 ---------------------------- */
 
-build_pe_list(N, Zs, PREV_As, [As], [P_As], CNF) :-
+build_pe_list(N, Zs, PREV_As, [As], [P_As], Cnf) :-
     length(Zs, L_Zs),
     length(As, L_Zs),
-    lt(As, Zs, CNF1),
-    leq(PREV_As, As, CNF2),
+    lt(As, Zs, Cnf1),
+    leq(PREV_As, As, Cnf2),
 
-    power(N, As, P_As, CNF3),
-    append([CNF1, CNF2, CNF3], CNF),!.
+    power(N, As, P_As, Cnf3),
+    append([Cnf1, Cnf2, Cnf3], Cnf),!.
 
-build_pe_list(N, Zs, PREV_As, [As|LON], [P_As|P_LON], CNF) :-
+build_pe_list(N, Zs, PREV_As, [As|LON], [P_As|P_LON], Cnf) :-
     length(Zs, L_Zs),
     length(As, L_Zs),
-    lt(As, Zs, CNF1),
-    leq(PREV_As, As, CNF2),
+    lt(As, Zs, Cnf1),
+    leq(PREV_As, As, Cnf2),
     
-    power(N, As, P_As, CNF3),
-    build_pe_list(N, Zs, As, LON, P_LON, CNF4),
-    append([CNF1, CNF2, CNF3, CNF4], CNF),!.
+    power(N, As, P_As, Cnf3),
+    build_pe_list(N, Zs, As, LON, P_LON, Cnf4),
+    append([Cnf1, Cnf2, Cnf3, Cnf4], Cnf),!.
 
-powerEquation(N, M, Zs, LON, CNF) :-
+powerEquation(N, M, Zs, LON, Cnf) :-
     length(LON, M),
-    build_pe_list(N, Zs, [-1], LON, P_LON, CNF1),
-    sum(P_LON, P_Zs1, CNF2),
-    power(N, Zs, P_Zs2, CNF3),
-    leq(P_Zs1, P_Zs2, CNF4),
-    leq(P_Zs2, P_Zs1, CNF5),
-    append([CNF1, CNF2, CNF3, CNF4, CNF5], CNF),!.
+    build_pe_list(N, Zs, [-1], LON, P_LON, Cnf1),
+    sum(P_LON, P_Zs1, Cnf2),
+    power(N, Zs, P_Zs2, Cnf3),
+    leq(P_Zs1, P_Zs2, Cnf4),
+    leq(P_Zs2, P_Zs1, Cnf5),
+    append([Cnf1, Cnf2, Cnf3, Cnf4, Cnf5], Cnf),!.
 
 /* ---------------------------- TASK 7 ---------------------------- */
 
-encode(euler(N, NumBits), [Zs|LON], CNF) :-
+encode(euler(N, NumBits), [Zs|LON], Cnf) :-
     M is N - 1,
     length(Zs, NumBits),
-    powerEquation(N, M, Zs, LON, CNF),!.
+    powerEquation(N, M, Zs, LON, Cnf),!.
 
 bin_to_dec(_I, [], 0).
 
@@ -409,7 +409,7 @@ Task 6
     Zs=[_,_,_], powerEquation(2,2,Zs,List,Cnf), sat([Zs|Cnf]).
 
 Task 7
-statistics(cputime,Time1), solve(euler(5,8), Solution), statistics(cputime,Time2), Time12 is floor(Time2-Time1).
+    statistics(cputime,Time1), solve(euler(5,8), Solution), statistics(cputime,Time2), Time12 is floor(Time2-Time1).
 
 Task 8
     statistics(cputime,Time1), solveAll(partition(2,5), Solutions), statistics(cputime,Time2), Time12 is (Time2-Time1).
