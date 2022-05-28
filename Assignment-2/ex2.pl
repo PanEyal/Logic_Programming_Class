@@ -372,7 +372,7 @@ solveAll(Instance, Solution) :-
     trans(T_Solution, Solution),
     verifyAll(Instance, Solution).
 
-/*169
+/*
 Task 1
     Xs=[1,_], Ys=[_,_,_], add(Xs,Ys,Zs,Cnf), sat(Cnf).
     Zs=[1,-1,1,1], PaddedZs=[1,-1,1,1,-1], length(Xs,4), length(Ys,4), add(Xs,Ys,PaddedZs,Cnf), sat(Cnf).
@@ -391,5 +391,13 @@ Task 5
 
 Task 6
     Zs=[_,_,_], powerEquation(2,2,Zs,List,Cnf), sat([Zs|Cnf]).
+
+Task 7
 statistics(cputime,Time1), solve(euler(5,8), Solution), statistics(cputime,Time2), Time12 is floor(Time2-Time1).
+
+Task 8
+    statistics(cputime,Time1), solveAll(partition(2,5), Solutions), statistics(cputime,Time2), Time12 is (Time2-Time1).
+    statistics(cputime,Time1), solveAll(partition(3,4), Solutions), statistics(cputime,Time2), Time12 is (Time2-Time1).
+    statistics(cputime,Time1), solveAll(partition(4,9), Solutions), statistics(cputime,Time2), Time12 is (Time2-Time1).
+    statistics(cputime,Time1), solveAll(partition(5,7), Solutions), statistics(cputime,Time2), Time12 is (Time2-Time1).
 */
