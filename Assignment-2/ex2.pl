@@ -110,6 +110,7 @@ add([X|Xs], [Y|Ys], Cin, [Z|Zs], CNF) :-
     add(Xs, Ys, Cout, Zs, CNF2),
     append(CNF1, CNF2, CNF),!.
 
+% For two LSB the carry in bit is 0 (-1)
 add(Xs, Ys, Zs, CNF) :-
     add(Xs, Ys, -1, Zs, CNF),!.
 
@@ -148,37 +149,52 @@ _______________|_________|________
     Therefore the CNF for the Less Equal/Than is:
 */
 
-bit_leq(X, Y, LEQin, LEQout, CNF) :-
-    CNF =  [[ X,  Y,  LEQin, -LEQout],
-            [ X,  Y, -LEQin,  LEQout],
-            [ X, -Y,  LEQout],
-            [-X,  Y, -LEQout],
-            [-X, -Y,  LEQin, -LEQout],
-            [-X, -Y, -LEQin,  LEQout]].
+/* 
+    In bit_compare, the Cnf holds only if the leq property holds.
+    - CompareIn represent if the X's that builds the NumBit Xs until now,
+      was less or equal than the Y's that builds the NumBit Ys 
+    - CompareOut represent if the leq property holds after the visit in the current X and Y bits.
+*/
+bit_compare(X, Y, CompareIn, CompareOut, CNF) :-
+    CNF =  [[ X,  Y,  CompareIn, -CompareOut],
+            [ X,  Y, -CompareIn,  CompareOut],
+            [ X, -Y,  CompareOut],
+            [-X,  Y, -CompareOut],
+            [-X, -Y,  CompareIn, -CompareOut],
+            [-X, -Y, -CompareIn,  CompareOut]].
 
-leq([], [], LEQin, LEQin, []).
+% Case for |Xs|=|Ys| and we scanned through all the bits
+compare([], [], CompareIn, CompareIn, []).
 
-leq([], [Y|Ys], LEQin, LEQout, [[-Padded_X]|CNF]) :-
-    bit_leq(Padded_X, Y, LEQin, LEQtemp, CNF1),
-    leq([], Ys, LEQtemp, LEQout, CNF2),
+% Case for |Xs|<|Ys|. Keep scanning Ys, We might need a 1 bit to be bigger than X
+compare([], [Y|Ys], CompareIn, CompareOut, [[-Padded_X]|CNF]) :-
+    bit_compare(Padded_X, Y, CompareIn, CompareTemp, CNF1),
+    compare([], Ys, CompareTemp, CompareOut, CNF2),
     append(CNF1, CNF2, CNF),!.
 
-leq([X|Xs], [], LEQin, LEQout, [[-X]|CNF]) :-
-    leq(Xs, [], LEQin, LEQout, CNF),!.
+% Case for |Xs|>|Ys|. Make sure all X's are -1
+compare([X|Xs], [], CompareIn, CompareOut, [[-X]|CNF]) :-
+    compare(Xs, [], CompareIn, CompareOut, CNF),!.
 
-leq([X|Xs], [Y|Ys], LEQin, LEQout, CNF) :-
-    bit_leq(X, Y, LEQin, LEQtemp, CNF1),
-    leq(Xs, Ys, LEQtemp, LEQout, CNF2),
+% General Case, Scan both Xs and Ys and advance
+compare([X|Xs], [Y|Ys], CompareIn, CompareOut, CNF) :-
+    bit_compare(X, Y, CompareIn, CompareTemp, CNF1),
+    compare(Xs, Ys, CompareTemp, CompareOut, CNF2),
     append(CNF1, CNF2, CNF),!.
 
+% Empty Xs is leq than Ys as they are equal (Sending CompareIn = 1)
+% The CompareOut needs to be 1 to make leq holds.
 leq(Xs, Ys, CNF) :-
-    leq(Xs, Ys, 1, 1, CNF),!.
+    compare(Xs, Ys, 1, 1, CNF),!.
 
+% Empty Xs is not smaller than Ys as that they are equal (Sending CompareIn = -1)
+% The CompareOut needs to be 1 to make lt holds.
 lt(Xs, Ys, CNF) :-
-    leq(Xs, Ys, -1, 1, CNF),!.
+    compare(Xs, Ys, -1, 1, CNF),!.
 
 /* ---------------------------- TASK 3 ---------------------------- */
 
+% Case for empty list, return the sum until now.
 sum(Zs, [], Zs, []) :- !.
 
 sum(PREV_Zs, [Xs|REST], Zs, CNF) :-
