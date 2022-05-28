@@ -318,64 +318,59 @@ solve(Instance, Solution) :-
 
 /* ---------------------------- TASK 8 ---------------------------- */
 
-encode2(euler(N, NumBits), [Zs|LON], CNF) :-
+encodeAll(partition(N, NumBits), [Zs|LON], Cnf) :-
     length(Zs, NumBits),
-    powerEquation(N, N, Zs, LON, CNF),!.
+    powerEquation(N, N, Zs, LON, Cnf),!.
 
-bin_to_dec2(_I, [], 0).
+lists_firsts_rests([], [], []).
+lists_firsts_rests([[F|Os]|Rest], [F|Fs], [Os|Oss]) :-
+        lists_firsts_rests(Rest, Fs, Oss),!.
 
-bin_to_dec2(I, [1|Xs], Z) :-
-    Ipp is (I + 1),
-    bin_to_dec(Ipp, Xs, PREV_Z),
-    Z is (PREV_Z + (2 ** I)),!.
+trans([], []).
+trans([F|Fs], Ts) :-
+    trans(F, [F|Fs], Ts),!.
 
-bin_to_dec2(I, [-1|Xs], Z) :-
-    Ipp is (I + 1),
-    bin_to_dec(Ipp, Xs, Z),!.
+trans([], _, []).
+trans([_|Rs], Ms, [Ts|Tss]) :-
+        lists_firsts_rests(Ms, Ts, Ms1),
+        trans(Rs, Ms1, Tss),!.
 
-bin_to_dec2(Xs, Z) :-
-    bin_to_dec(0, Xs, Z),!.
+decodeAll([Map],[Sol]) :-
+    trans(Map, T_Map),
+    bins_to_decs(T_Map, Sol),!.
 
-bins_to_decs2([], []).
+decodeAll([Map|Maps],[Sol|Sols]) :-
+    trans(Map, T_Map),
+    bins_to_decs(T_Map, Sol),
+    decodeAll(Maps, Sols),!.
 
-bins_to_decs2([Xs|LOXs], [D|LOD]) :-
-    bin_to_dec2(Xs, D),
-    bins_to_decs2(LOXs, LOD),!.
-
-decode2(Map,Solution) :-
-    bins_to_decs2(Map, Solution).
-
-build_pe_dec_list2(N,[As], [P_As]) :-
-    P_As is (As ** N),!.
-
-build_pe_dec_list2(N, [As|LON], [P_As|P_LON]) :-
-    P_As is (As ** N),
-    build_pe_dec_list2(N, LON, P_LON),!.
-
-verify2(euler(N, _NumBits), [_B|As]) :-
+verify2(partition(N, _NumBits), [_B|As]) :-
     length(As, As_L),
-    As_L =\= (N - 1),!,
-    writeln("Wrong Length").
+    As_L =\= N,!,
+    writeln(wrong_length).
 
-verify2(euler(N, _NumBits), [B|As]) :-
+verify2(partition(N, _NumBits), [B|As]) :-
     build_pe_dec_list(N, As, P_As),
-    P_As =\= (B ** N),!,
-    writeln("LHS != RHS").
+    sumlist(P_As, RHS),
+    RHS =\= (B ** N),!,
+    writeln(lhs_not_equal_rhs).
 
-verify2(_,_) :-
-        writeln(verified:ok).
+verifyAll(partition(N, NumBits), [Sol]) :-
+    verify2(partition(N, NumBits), Sol),!.
 
-solve2(Instance, Solution) :-
-    encode2(Instance, Map, Cnf),
-    sat(Cnf),
-    decode2(Map, Solution),
-    verify2(Instance, Solution).
+verifyAll(partition(N, NumBits), [Sol|Sols]) :-
+    verify2(partition(N, NumBits), Sol),
+    verifyAll(partition(N, NumBits), Sols),!.
 
-/* ------------------------------------------ */
+verifyAll(_,_) :-
+        writeln(verified:ok),!.
 
-get_cnf_size(N, NumBits, A) :-
-    encode(euler(N, NumBits), _Map, Cnf),
-    length(Cnf, A).
+solveAll(Instance, Solution) :-
+    encodeAll(Instance, Map, Cnf),
+    satMulti(Cnf, 1000, _Count, _Time),
+    decodeAll(Map, T_Solution),
+    trans(T_Solution, Solution),
+    verifyAll(Instance, Solution).
 
 /*169
 Task 1
