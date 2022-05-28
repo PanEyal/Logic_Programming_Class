@@ -118,33 +118,36 @@ add(Xs, Ys, Zs, Cnf) :-
 
 ---- Less Equal/Than Truth Table ----
 
-    X  Y LEQin |  LEQout | Value
-_______________|_________|________
-    0  0   0   |    0    |   T
-    0  0   0   |    1    |   F
-               |         |
-    1  0   0   |    0    |   T
-    1  0   0   |    1    |   F
-               |         |
-    0  1   0   |    0    |   F
-    0  1   0   |    1    |   T
-               |         |
-    1  1   0   |    0    |   T
-    1  1   0   |    1    |   F
-               |         |
-    0  0   1   |    0    |   F
-    0  0   1   |    1    |   T
-               |         |
-    1  0   1   |    0    |   T
-    1  0   1   |    1    |   F
-               |         |
-    0  1   1   |    0    |   F
-    0  1   1   |    1    |   T
-               |         |
-    1  1   1   |    0    |   F
-    1  1   1   |    1    |   T
-               |         |
+    X  Y CompareIn |  CompareOut | Value
+___________________|_____________|________
+    0  0      0    |      0      |   T
+    0  0      0    |      1      |   F
+                   |             |
+    1  0      0    |      0      |   T
+    1  0      0    |      1      |   F
+                   |             |
+    0  1      0    |      0      |   F
+    0  1      0    |      1      |   T
+                   |             |
+    1  1      0    |      0      |   T
+    1  1      0    |      1      |   F
+                   |             |
+    0  0      1    |      0      |   F
+    0  0      1    |      1      |   T
+                   |             |
+    1  0      1    |      0      |   T
+    1  0      1    |      1      |   F
+                   |             |
+    0  1      1    |      0      |   F
+    0  1      1    |      1      |   T
+                   |             |
+    1  1      1    |      0      |   F
+    1  1      1    |      1      |   T
+                   |             |
     
+    When X > Y, CompareIn is irrelevant -> CompareOut is true
+    And when X < Y, CompareIn is irrelevent -> CompareOut is false
+
     By negating all the false values rows, we can convert from DNF to Cnf.
     Therefore the Cnf for the Less Equal/Than is:
 */
@@ -197,37 +200,72 @@ lt(Xs, Ys, Cnf) :-
 % Case for empty list, return the sum until now.
 sum(Zs, [], Zs, []) :- !.
 
+% General Case, Iterate on list and sum it up
 sum(ZsPrev, [Xs|Rest], Zs, Cnf) :-
     add(ZsPrev, Xs, ZsCurr, Cnf1),
     sum(ZsCurr, Rest, Zs, Cnf2),
     append(Cnf1, Cnf2, Cnf),!.
 
+% Call for iterate function. Start with value 0 (= -1)
+% LON stands for List of Numbers
 sum(LON, Zs, Cnf) :-
     sum([-1], LON, Zs, Cnf),!.
 
-/* ---------------------------- TASK 4 ---------------------------- */
+/* ---------------------------- TASK 4 ----------------------------
+
+---- bit on bit product Truth Table ----
+
+    X  Y |  Z  | Value
+_________|_____|_______
+    0  0 |  0  |   T
+    0  0 |  1  |   F
+         |     |
+    1  0 |  0  |   T
+    1  0 |  1  |   F
+         |     |
+    0  1 |  0  |   T
+    0  1 |  1  |   F
+         |     |
+    1  1 |  0  |   F
+    1  1 |  1  |   T
+         |     |
+
+    When X is 0 or Y is 0 -> Z value is 0
+    We can minimize some rows in the Cnf in that manner.
+
+    By negating all the false values rows, we can convert from DNF to Cnf.
+    Therefore the Cnf for the bit on bit product is:
+
+*/
 
 bit_bit_prod(X, Y, Z, Cnf):-
     Cnf =  [[  X, -Z],
             [  Y, -Z],
             [ -X, -Y,  Z]],!.
 
+% Base case multiply single bit entry X with last bit of Y
 bit_bin_prod(X, [Y], [Z], Cnf) :-
     bit_bit_prod(X, Y, Z, Cnf),!.
 
+% Iterate over Ys and multiply each bit by X
 bit_bin_prod(X, [Y|Ys], [Z|Zs], Cnf) :-
     bit_bit_prod(X, Y, Z, Cnf1),
     bit_bin_prod(X, Ys, Zs, Cnf2),
     append(Cnf1, Cnf2, Cnf),!.
 
+% Last bit entry X, multyply it by Ys
 builld_times_list([X], Ys, [Zs], Cnf) :-
 	bit_bin_prod(X, Ys, Zs, Cnf),!.
 
+% Iterate over Xs and multiply each bit of it by Ys
 builld_times_list([X|Xs], Ys, [Zs|LON], Cnf) :-
 	bit_bin_prod(X, Ys, Zs, Cnf1),
 	builld_times_list(Xs, [-1|Ys], LON, Cnf2),
 	append(Cnf1, Cnf2, Cnf),!.
 
+% (Long Multiplication)
+% Build producs of each X bit with Ys with the right shift.
+% Then sum it all up
 times(Xs, Ys, Zs, Cnf) :-
 	builld_times_list(Xs, Ys, LON, Cnf1),
 	sum(LON, Zs, Cnf2),
@@ -235,18 +273,22 @@ times(Xs, Ys, Zs, Cnf) :-
 
 /* ---------------------------- TASK 5 ---------------------------- */
 
+% Define power by 0 to be 1
 power(0, _Xs, [Z], [[Z]]) :- !.
 
+% Base Case for power by 1 to be Xs
 power(1, Xs, Xs, []) :- !.
 
+% Multiply by Xs N times
 power(N, Xs, Zs, Cnf) :-
-    PREV_N is (N - 1),
-    power(PREV_N, Xs, ZsPrev, Cnf1),
+    NPrev is (N - 1),
+    power(NPrev, Xs, ZsPrev, Cnf1),
     times(Xs, ZsPrev, Zs, Cnf2),
     append(Cnf1, Cnf2, Cnf),!.
 
 /* ---------------------------- TASK 6 ---------------------------- */
 
+% Base Case for one element in list
 build_pe_list(N, Zs, AsPrev, [As], [P_As], Cnf) :-
     length(Zs, L_Zs),
     length(As, L_Zs),
@@ -256,6 +298,7 @@ build_pe_list(N, Zs, AsPrev, [As], [P_As], Cnf) :-
     power(N, As, P_As, Cnf3),
     append([Cnf1, Cnf2, Cnf3], Cnf),!.
 
+% Iterate over LON (list of numbers) and build a new list of their power
 build_pe_list(N, Zs, AsPrev, [As|LON], [P_As|P_LON], Cnf) :-
     length(Zs, L_Zs),
     length(As, L_Zs),
@@ -266,45 +309,62 @@ build_pe_list(N, Zs, AsPrev, [As|LON], [P_As|P_LON], Cnf) :-
     build_pe_list(N, Zs, As, LON, P_LON, Cnf4),
     append([Cnf1, Cnf2, Cnf3, Cnf4], Cnf),!.
 
+% Return Cnf that satisfies Xs = Ys
+equal(Xs, Ys, Cnf) :-
+    leq(Xs, Ys, Cnf1),
+    leq(Ys, Xs, Cnf2),
+    append(Cnf1, Cnf2, Cnf).
+
+% Build new list of the power of each element.
+% Sum it up and compare with the power of Z
 powerEquation(N, M, Zs, LON, Cnf) :-
     length(LON, M),
     build_pe_list(N, Zs, [-1], LON, P_LON, Cnf1),
     sum(P_LON, P_Zs1, Cnf2),
     power(N, Zs, P_Zs2, Cnf3),
-    leq(P_Zs1, P_Zs2, Cnf4),
-    leq(P_Zs2, P_Zs1, Cnf5),
-    append([Cnf1, Cnf2, Cnf3, Cnf4, Cnf5], Cnf),!.
+    equal(P_Zs1, P_Zs2, Cnf4),
+    append([Cnf1, Cnf2, Cnf3, Cnf4], Cnf),!.
 
 /* ---------------------------- TASK 7 ---------------------------- */
 
+/* --------- encode code --------- */
+
+% The encode Code, LON stands for list of numbers
 encode(euler(N, NumBits), [Zs|LON], Cnf) :-
     M is N - 1,
     length(Zs, NumBits),
     powerEquation(N, M, Zs, LON, Cnf),!.
 
+/* --------- decode code --------- */
+
+% bin_to_dec take a NumBits representation and convert it to decimal
 bin_to_dec(_I, [], 0).
 
 bin_to_dec(I, [1|Xs], Z) :-
-    Ipp is (I + 1),
-    bin_to_dec(Ipp, Xs, PREV_Z),
-    Z is (PREV_Z + (2 ** I)),!.
+    bin_to_dec((I + 1), Xs, ZPrev),
+    Z is (ZPrev + (2 ** I)),!.
 
 bin_to_dec(I, [-1|Xs], Z) :-
-    Ipp is (I + 1),
-    bin_to_dec(Ipp, Xs, Z),!.
+    bin_to_dec((I + 1), Xs, Z),!.
 
 bin_to_dec(Xs, Z) :-
     bin_to_dec(0, Xs, Z),!.
 
+% bins_to_decs take a list of NumBits and convert it to list of decimals
 bins_to_decs([], []).
 
+% LOXs stands for List of Xs
 bins_to_decs([Xs|LOXs], [D|LOD]) :-
     bin_to_dec(Xs, D),
     bins_to_decs(LOXs, LOD),!.
 
+% To decode -> convert from NumBits to decimal
 decode(Map,Solution) :-
     bins_to_decs(Map, Solution).
 
+/* --------- verify code --------- */
+
+% build_pe_dec_list build a powerEquation from decimals
 build_pe_dec_list(N,[As], [P_As]) :-
     P_As is (As ** N),!.
 
@@ -312,19 +372,24 @@ build_pe_dec_list(N, [As|LON], [P_As|P_LON]) :-
     P_As is (As ** N),
     build_pe_dec_list(N, LON, P_LON),!.
 
-verify(euler(N, _NumBits), [_B|As]) :-
-    length(As, As_L),
-    As_L =\= (N - 1),!,
-    writeln(wrong_length).
-
+% Make sure right hand side of the equation equals to left hand side
 verify(euler(N, _NumBits), [B|As]) :-
     build_pe_dec_list(N, As, P_As),
     sumlist(P_As, RHS),
     RHS =\= (B ** N),!,
     writeln(lhs_not_equal_rhs).
 
+% make sure the right hand side composed from (N - 1) elements
+verify(euler(N, _NumBits), [_B|As]) :-
+    length(As, As_L),
+    As_L =\= (N - 1),!,
+    writeln(wrong_length).
+
+% No issues found
 verify(_,_) :-
         writeln(verified:ok).
+
+/* --------- solve code --------- */
 
 solve(Instance, Solution) :-
     encode(Instance, Map, Cnf),
@@ -334,10 +399,15 @@ solve(Instance, Solution) :-
 
 /* ---------------------------- TASK 8 ---------------------------- */
 
+/* --------- encode code --------- */
+
 encodeAll(partition(N, NumBits), [Zs|LON], Cnf) :-
     length(Zs, NumBits),
     powerEquation(N, N, Zs, LON, Cnf),!.
 
+/* --------- decode code --------- */
+
+% Transpose code for Matrix, Took from an old SWI's code of clpfd library
 lists_firsts_rests([], [], []).
 lists_firsts_rests([[F|Os]|Rest], [F|Fs], [Os|Oss]) :-
         lists_firsts_rests(Rest, Fs, Oss),!.
@@ -351,26 +421,38 @@ trans([_|Rs], Ms, [Ts|Tss]) :-
         lists_firsts_rests(Ms, Ts, Ms1),
         trans(Rs, Ms1, Tss),!.
 
-decodeAll([Map],[Sol]) :-
+% decode each solution the same as in Task 7, and gather into one list
+decode2([Map],[Sol]) :-
     trans(Map, T_Map),
     bins_to_decs(T_Map, Sol),!.
 
-decodeAll([Map|Maps],[Sol|Sols]) :-
+decode2([Map|Maps],[Sol|Sols]) :-
     trans(Map, T_Map),
     bins_to_decs(T_Map, Sol),
-    decodeAll(Maps, Sols),!.
+    decode2(Maps, Sols),!.
 
-verify2(partition(N, _NumBits), [_B|As]) :-
-    length(As, As_L),
-    As_L =\= N,!,
-    writeln(wrong_length).
+% To decode -> convert each sufficient clause from NumBits to decimal
+decodeAll(Map,Solution) :-
+    decode2(Map, T_Solution),
+    trans(T_Solution, Solution).
 
+
+/* --------- verify code --------- */
+
+% Make sure for each sufficient clause that right hand side of the equation equals to left hand side
 verify2(partition(N, _NumBits), [B|As]) :-
     build_pe_dec_list(N, As, P_As),
     sumlist(P_As, RHS),
     RHS =\= (B ** N),!,
     writeln(lhs_not_equal_rhs).
 
+% make sure for each sufficient clause that the right hand side composed from N elements
+verify2(partition(N, _NumBits), [_B|As]) :-
+    length(As, As_L),
+    As_L =\= N,!,
+    writeln(wrong_length).
+
+% verify each sufficient clause
 verifyAll(partition(N, NumBits), [Sol]) :-
     verify2(partition(N, NumBits), Sol),!.
 
@@ -378,17 +460,20 @@ verifyAll(partition(N, NumBits), [Sol|Sols]) :-
     verify2(partition(N, NumBits), Sol),
     verifyAll(partition(N, NumBits), Sols),!.
 
+% No issues found
 verifyAll(_,_) :-
         writeln(verified:ok),!.
+
+/* --------- solve code --------- */
 
 solveAll(Instance, Solution) :-
     encodeAll(Instance, Map, Cnf),
     satMulti(Cnf, 1000, _Count, _Time),
-    decodeAll(Map, T_Solution),
-    trans(T_Solution, Solution),
+    decodeAll(Map, Solution),
     verifyAll(Instance, Solution).
 
-/*
+/* ---------------------------- TESTING CODE ---------------------------- 
+
 Task 1
     Xs=[1,_], Ys=[_,_,_], add(Xs,Ys,Zs,Cnf), sat(Cnf).
     Zs=[1,-1,1,1], PaddedZs=[1,-1,1,1,-1], length(Xs,4), length(Ys,4), add(Xs,Ys,PaddedZs,Cnf), sat(Cnf).
