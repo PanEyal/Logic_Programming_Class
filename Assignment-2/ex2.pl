@@ -6,7 +6,6 @@ of my program any code taken from an external source. */
 user:file_search_path(xxxx, 'C:/Users/paney/Documents/Studies/Logic_Programming_Class/Assignment-2/satsolver').
 :- use_module(xxxx(satsolver)).
 
-
 /* ---------------------------- TASK 1 ---------------------------- */
 
 /*
@@ -316,9 +315,9 @@ equal(Xs, Ys, Cnf) :-
     append(Cnf1, Cnf2, Cnf).
 
 % Build new list of the power of each element.
-% Sum it up and compare with the power of Z
-% powerEquation also sorts LON (list of numbers) for Task 7 and 8
-% given unsorted LON into powerEquation will results in failure.
+% Sum it up and compare with the power of Z.
+% powerEquation also sorts LON (list of numbers) for Task 7 and 8.
+% Given unsorted LON into powerEquation will results in failure.
 powerEquation(N, M, Zs, LON, Cnf) :-
     length(LON, M),
     build_pe_list(N, Zs, [-1], LON, P_LON, Cnf1),
@@ -381,7 +380,7 @@ verify(euler(N, _NumBits), [B|As]) :-
     RHS =\= (B ** N),!,
     writeln(lhs_not_equal_rhs).
 
-% make sure the right hand side composed from (N - 1) elements
+% Make sure the right hand side composed from (N - 1) elements
 verify(euler(N, _NumBits), [_B|As]) :-
     length(As, As_L),
     As_L =\= (N - 1),!,
@@ -409,7 +408,7 @@ encodeAll(partition(N, NumBits), [Zs|LON], Cnf) :-
 
 /* --------- decode code --------- */
 
-% Transpose code for Matrix, Took from an old SWI's code of clpfd library
+% Transpose code for a Matrix, It's from an old SWI's code of clpfd library
 lists_firsts_rests([], [], []).
 lists_firsts_rests([[F|Os]|Rest], [F|Fs], [Os|Oss]) :-
         lists_firsts_rests(Rest, Fs, Oss),!.
@@ -423,7 +422,7 @@ trans([_|Rs], Ms, [Ts|Tss]) :-
         lists_firsts_rests(Ms, Ts, Ms1),
         trans(Rs, Ms1, Tss),!.
 
-% decode each solution the same as in Task 7, and gather into one list
+% Decode each solution the same as in Task 7, and gather into one list
 decode2([Map],[Sol]) :-
     trans(Map, T_Map),
     bins_to_decs(T_Map, Sol),!.
@@ -448,13 +447,13 @@ verify2(partition(N, _NumBits), [B|As]) :-
     RHS =\= (B ** N),!,
     writeln(lhs_not_equal_rhs).
 
-% make sure for each sufficient clause that the right hand side composed from N elements
+% Make sure for each sufficient clause that the right hand side composed from N elements
 verify2(partition(N, _NumBits), [_B|As]) :-
     length(As, As_L),
     As_L =\= N,!,
     writeln(wrong_length).
 
-% verify each sufficient clause
+% Verify each sufficient clause
 verifyAll(partition(N, NumBits), [Sol]) :-
     verify2(partition(N, NumBits), Sol),!.
 
@@ -475,6 +474,8 @@ solveAll(Instance, Solution) :-
     verifyAll(Instance, Solution).
 
 /* ---------------------------- TESTING CODE ---------------------------- 
+    These are the testing code with the right amount of padding added.
+    (was needed in the reverse direction of Task 1, 3 and 4)
 
 Task 1
     Xs=[1,_], Ys=[_,_,_], add(Xs,Ys,Zs,Cnf), sat(Cnf).
@@ -497,7 +498,7 @@ Task 6
 
 Task 7
     statistics(cputime,Time1), solve(euler(5,8), Solution), statistics(cputime,Time2), Time12 is floor(Time2-Time1).
-
+        -> Takes around 120 seconds
 Task 8
     statistics(cputime,Time1), solveAll(partition(2,5), Solutions), statistics(cputime,Time2), Time12 is (Time2-Time1).
     statistics(cputime,Time1), solveAll(partition(3,4), Solutions), statistics(cputime,Time2), Time12 is (Time2-Time1).
