@@ -3,8 +3,8 @@ I have not received any part from any other student in the class (or other sourc
 nor did I give parts of it for use to others. I have clearly marked in the comments
 of my program any code taken from an external source. */
 
-user:file_search_path(xxxx, 'C:/Users/paney/Documents/Studies/Logic_Programming_Class/Assignment-2/satsolver').
-:- use_module(xxxx(satsolver)).
+user:file_search_path(sat, './satsolver').
+:- use_module(sat(satsolver)).
 
 /* ---------------------------- TASK 1 ---------------------------- */
 
@@ -86,6 +86,11 @@ full_adder(X, Y, Cin, Z, Cout, Cnf) :-
             [ -X,  Y, -Cin,  Cout],
             [  X, -Y, -Cin,  Cout],
             [ -X, -Y, -Cin,  Cout]],!.
+
+% I found out that instead of sending '-1' to the Cnf formula as the initial Carry in bit,
+% is it best to send it as a single Cnf expression [-N] (N for negative),
+% append it to the rest of the Cnf and then use it in the full_adder function as well.
+% The solver will run (somehow) much faster.
 
 % Base case for X=0, Y=0
 add([X], [Y], Cin, [Z,Cout], Cnf) :-
@@ -278,7 +283,17 @@ power(0, _Xs, [Z], [[Z]]) :- !.
 % Base Case for power by 1 to be Xs
 power(1, Xs, Xs, []) :- !.
 
-% Multiply by Xs N times
+% % When N is even: Xs^N = (Xs^(N/2))^2, In that way it saves Cnf's size.
+% % However I found out that if I use it the running time of the Sat solver is much much slower.
+% % This is why I left it in comment (Uncommenting it will be a valid run).
+% power(N, Xs, Zs, Cnf) :-
+%     0 is (N mod 2),
+%     NPrev is (N - 1),
+%     power(NPrev, Xs, ZsPrev, Cnf1),
+%     times(ZsPrev, ZsPrev, Zs, Cnf2),
+%     append(Cnf1, Cnf2, Cnf),!.
+
+% Multiply Xs N times
 power(N, Xs, Zs, Cnf) :-
     NPrev is (N - 1),
     power(NPrev, Xs, ZsPrev, Cnf1),
