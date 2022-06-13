@@ -21,7 +21,7 @@ kakuroVerifyBlockRange([N|Rest]) :-
     N =< 9,
     kakuroVerifyBlockRange(Rest).
 
-kakuroVerifyElement([ClueSum, Block]) :-
+kakuroVerifyElement((ClueSum=Block)) :-
     sum_list(Block, Sum),
     ClueSum =:= Sum,
     kakuroVerifyBlockRange(Block).
