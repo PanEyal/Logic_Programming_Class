@@ -51,10 +51,9 @@ kakuroEncode(Instance, Instance, Constraints) :-
 % ------------------------------- Decode ------------------------------- %
 
 kakuroDecode([], []).
-kakuroDecode([(ClueSum=Block1)|Rest1],[(ClueSum=Block2)|Rest2]):-
-    % use BEE auxiliary module to decode integers
-    bDecode:decodeIntArray(Block1, Block2),
-    kakuroDecode(Rest1, Rest2).
+kakuroDecode([(ClueSum=Block)|Rest],[(ClueSum=DecodedBlock)|DecodedRest]):-
+    decodeIntArray(Block, DecodedBlock),
+    kakuroDecode(Rest, DecodedRest).
 
 % -------------------------------- Solve -------------------------------- %
 
