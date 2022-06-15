@@ -40,7 +40,7 @@ kakuroVerifyElement((ClueSum=InsBlock),(ClueSum=SolBlock)) :-
     kakuroVerifyBlockUnique(SolBlock),
     kakuroVerifyBlockSum(ClueSum, SolBlock).
 
-% Verification
+% Verificating!
 kakuroVerify([], []).
 kakuroVerify([InsElement|InsRest], [SolElement|SolRest]) :-
     kakuroVerifyElement(InsElement, SolElement),
@@ -48,22 +48,29 @@ kakuroVerify([InsElement|InsRest], [SolElement|SolRest]) :-
 
 % ------------------------------- Encode ------------------------------- %
 
+% Get all Variables to declare on
 kakuroGetVars([], []).
 kakuroGetVars([(_ClueSum=Block)|Rest], Vars) :-
     kakuroGetVars(Rest, VRest),
     term_variables([Block, VRest], Vars),!.
 
+% declare on all Variables
 kakuroDeclareInts([], []).
 kakuroDeclareInts([I|Rest], [new_int(I, 1, 9)|Constraints]) :-
     kakuroDeclareInts(Rest, Constraints),!.
 
+% Instance is the map itself, need only 2 argumetns
 kakuroEncode([], []).
 kakuroEncode([(ClueSum=Block)|Rest], Constraints) :-
+    % Block Sum Constrains
     Cs1 = [new_int(MClueSum, ClueSum, ClueSum), int_array_sum_eq(Block, MClueSum)],
+    % Unique Block Constrains
     Cs2 = [int_array_allDiff(Block)],
+    % Next Iteration
     kakuroEncode(Rest, Cs3),
     append([Cs1, Cs2, Cs3], Constraints),!.
 
+% Encoding!
 kakuroEncode(Instance, Instance, Constraints) :-
     kakuroGetVars(Instance, Vars),
     kakuroDeclareInts(Vars, Cs1),
@@ -72,6 +79,8 @@ kakuroEncode(Instance, Instance, Constraints) :-
 
 % ------------------------------- Decode ------------------------------- %
 
+% The map is in the solution format, just decode each Block
+% Decoding!
 kakuroDecode([], []).
 kakuroDecode([(ClueSum=Block)|Rest],[(ClueSum=DecodedBlock)|DecodedRest]):-
     decodeIntArray(Block, DecodedBlock),
@@ -79,5 +88,6 @@ kakuroDecode([(ClueSum=Block)|Rest],[(ClueSum=DecodedBlock)|DecodedRest]):-
 
 % -------------------------------- Solve -------------------------------- %
 
+% Solving!
 kakuroSolve(Instance,Solution):-
     runExpr(Instance, Solution, kakuroEncode, kakuroDecode, kakuroVerify).
