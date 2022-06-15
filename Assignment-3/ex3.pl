@@ -1,10 +1,11 @@
 
-user:file_search_path(sat, './satsolver').
-user:file_search_path(bee, './beeCompiler').
+user:file_search_path(satSolver, './satsolver').
+user:file_search_path(beeCompiler, './beeCompiler').
+user:file_search_path(aux, './bApplications/auxs').
 
-:- use_module(sat(satsolver)).
-:- use_module(bee(bCompiler)).
-:- dynamic listKeepFrom/4.
+:- use_module(satSolver(satsolver)).
+:- use_module(beeCompiler(bCompiler),[listKeepFrom/4]).
+:- use_module(aux(auxRunExpr),[runExpr/5, decodeIntArray/2]).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% KAKURO %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
