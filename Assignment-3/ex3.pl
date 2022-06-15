@@ -33,20 +33,26 @@ kakuroVerify([Element|Rest1], [Element|Rest2]) :-
 
 % ------------------------------- Encode ------------------------------- %
 
-kakuroDeclareBlockInts([], []).
-kakuroDeclareBlockInts([N|Rest], Constraints) :-
-    kakuroDeclareBlockInts(Rest, Cs),
-    (not(var(N)) -> append([[new_int(N, 1, 9)], Cs], Constraints); Cs = Constraints),!.
+kakuroGetVars([], []).
+kakuroGetVars([(_ClueSum=Block)|Rest], Vars) :-
+    kakuroGetVars(Rest, VRest),
+    term_variables([Block, VRest], Vars),!.
+
+kakuroDeclareInts([], []).
+kakuroDeclareInts([I|Rest], [new_int(I, 1, 9)|Constraints]) :-
+    kakuroDeclareInts(Rest, Constraints),!.
 
 kakuroEncode([], []).
 kakuroEncode([(ClueSum=Block)|Rest], Constraints) :-
-    Cs1 = [new_int(ClueSumDeclared, ClueSum, ClueSum), bool_array_sum_eq(Block, ClueSumDeclared)],
-    kakuroDeclareBlockInts(Block, Cs2),
-    kakuroEncode(Rest, Cs3),
-    append([Cs1, Cs2, Cs3], Constraints),!.
+    Cs1 = [new_int(MClueSum, ClueSum, ClueSum), int_array_sum_eq(Block, MClueSum)],
+    kakuroEncode(Rest, Cs2),
+    append([Cs1, Cs2], Constraints),!.
 
 kakuroEncode(Instance, Instance, Constraints) :-
-    kakuroEncode(Instance, Constraints),!.
+    kakuroGetVars(Instance, Vars),
+    kakuroDeclareInts(Vars, Cs1),
+    kakuroEncode(Instance, Cs2),
+    append([Cs1, Cs2], Constraints),!.
 
 % ------------------------------- Decode ------------------------------- %
 
