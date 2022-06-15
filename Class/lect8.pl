@@ -1,10 +1,9 @@
-user:file_search_path(satSolver, './satsolver').
+
 user:file_search_path(beeCompiler, './beeCompiler').
 user:file_search_path(aux, './bApplications/auxs').
 
-:- use_module(satSolver(satsolver)).
-:- use_module(beeCompiler(bCompiler),[listKeepFrom/4]).
-:- use_module(aux(auxRunExpr),[runExpr/5, decodeIntArray/2]).
+:- use_module(beeCompiler(bCompiler)).
+:- use_module(aux(auxRunExpr)).
 
 %% ?- solve(partition(2,3),S).
 %% verify:ok
