@@ -15,21 +15,22 @@ user:file_search_path(aux, './bApplications/auxs').
 % ------------------------------- Verify ------------------------------- %
 
 kakuroVerifyBlockRange([]).
-kakuroVerifyBlockRange([N|Rest]) :-
-    N >= 1,
-    N =< 9,
+kakuroVerifyBlockRange([I|Rest]) :-
+    I >= 1,
+    I =< 9,
     kakuroVerifyBlockRange(Rest).
 
-kakuroVerifyElement((ClueSum=Block)) :-
-    sum_list(Block, Sum),
+kakuroVerifyElement((ClueSum=InsBlock),(ClueSum=SolBlock)) :-
+    length(InsBlock, Len),
+    length(SolBlock, Len),
+    sum_list(SolBlock, Sum),
     ClueSum =:= Sum,
-    kakuroVerifyBlockRange(Block).
+    kakuroVerifyBlockRange(SolBlock).
 
-kakuroVerify([], []) :-
-    writeln(verify:ok).
-
-kakuroVerify([Element|Rest1], [Element|Rest2]) :-
-    (kakuroVerifyElement(Element) -> kakuroVerify(Rest1, Rest2); writeln(verify:wrong)).
+kakuroVerify([], []).
+kakuroVerify([InsElement|InsRest], [SolElement|SolRest]) :-
+    kakuroVerifyElement(InsElement, SolElement),
+    kakuroVerify(InsRest, SolRest).
 
 % ------------------------------- Encode ------------------------------- %
 
