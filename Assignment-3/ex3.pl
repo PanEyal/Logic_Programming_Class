@@ -61,8 +61,4 @@ kakuroDecode([(ClueSum=Block1)|Rest1],[(ClueSum=Block2)|Rest2]):-
 % -------------------------------- Solve -------------------------------- %
 
 kakuroSolve(Instance,Solution):-
-    kakuroEncode(Instance, Map, Constraints),
-    bCompile(Constraints, Cnf),
-    sat(Cnf).
-    % kakuroDecode(Map, Solution),
-    % (kakuroVerify(Instance, Solution) -> true ; writeln(wrong)).
+    runExpr(Instance, Solution, kakuroEncode, kakuroDecode, kakuroVerify).
