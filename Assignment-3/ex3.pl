@@ -14,19 +14,33 @@ user:file_search_path(aux, './bApplications/auxs').
 
 % ------------------------------- Verify ------------------------------- %
 
-kakuroVerifyBlockRange([]).
-kakuroVerifyBlockRange([I|Rest]) :-
-    I >= 1,
-    I =< 9,
-    kakuroVerifyBlockRange(Rest).
+% Making sure numbers are between 1 to 9
+kakuroVerifyBlockRange(Block) :-
+    forall(member(I, Block), I >= 1),
+    forall(member(I, Block), I =< 9).
 
+% Making sure numbers are unique
+unique(I, Block) :-
+    selectchk(I, Block, Rest),
+    not(member(I, Rest)).
+
+kakuroVerifyBlockUnique(Block) :-
+    forall(member(I, Block), unique(I, Block)).
+
+% Making sure numbers sum
+kakuroVerifyBlockSum(ClueSum, Block) :-
+    sum_list(Block, Sum),
+    ClueSum =:= Sum.
+
+% Verification for each element
 kakuroVerifyElement((ClueSum=InsBlock),(ClueSum=SolBlock)) :-
     length(InsBlock, Len),
     length(SolBlock, Len),
-    sum_list(SolBlock, Sum),
-    ClueSum =:= Sum,
-    kakuroVerifyBlockRange(SolBlock).
+    kakuroVerifyBlockRange(SolBlock),
+    kakuroVerifyBlockUnique(SolBlock),
+    kakuroVerifyBlockSum(ClueSum, SolBlock).
 
+% Verification
 kakuroVerify([], []).
 kakuroVerify([InsElement|InsRest], [SolElement|SolRest]) :-
     kakuroVerifyElement(InsElement, SolElement),
