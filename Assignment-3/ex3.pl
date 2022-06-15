@@ -46,8 +46,9 @@ kakuroDeclareInts([I|Rest], [new_int(I, 1, 9)|Constraints]) :-
 kakuroEncode([], []).
 kakuroEncode([(ClueSum=Block)|Rest], Constraints) :-
     Cs1 = [new_int(MClueSum, ClueSum, ClueSum), int_array_sum_eq(Block, MClueSum)],
-    kakuroEncode(Rest, Cs2),
-    append([Cs1, Cs2], Constraints),!.
+    Cs2 = [int_array_allDiff(Block)],
+    kakuroEncode(Rest, Cs3),
+    append([Cs1, Cs2, Cs3], Constraints),!.
 
 kakuroEncode(Instance, Instance, Constraints) :-
     kakuroGetVars(Instance, Vars),
