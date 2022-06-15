@@ -122,14 +122,14 @@ verify_killer_line(Solution) :-
     forall(between(1,9,J), verify_unique_column(J, Solution)).
 
 % Make sure that any two cells separated by a Knight’s move (the chess-piece) must be different.
-knight_move(I, J, I+1, J+2).
-knight_move(I, J, I+1, J-2).
-knight_move(I, J, I-1, J+2).
-knight_move(I, J, I-1, J-2).
-knight_move(I, J, I+2, J+1).
-knight_move(I, J, I+2, J-1).
-knight_move(I, J, I-2, J+1).
-knight_move(I, J, I-2, J-1).
+knight_move(I, J, NewI, NewJ) :- NewI is I + 1, NewJ is J + 2.
+knight_move(I, J, NewI, NewJ) :- NewI is I + 1, NewJ is J - 2.
+knight_move(I, J, NewI, NewJ) :- NewI is I - 1, NewJ is J + 2.
+knight_move(I, J, NewI, NewJ) :- NewI is I - 1, NewJ is J - 2.
+knight_move(I, J, NewI, NewJ) :- NewI is I + 2, NewJ is J + 1.
+knight_move(I, J, NewI, NewJ) :- NewI is I + 2, NewJ is J - 1.
+knight_move(I, J, NewI, NewJ) :- NewI is I - 2, NewJ is J + 1.
+knight_move(I, J, NewI, NewJ) :- NewI is I - 2, NewJ is J - 1.
 
 verify_unique_knight(I, J, Solution) :-
     findall(K, (knight_move(I, J, NewI, NewJ), member(cell(NewI,NewJ)=K, Solution)), Knight_Moves),
