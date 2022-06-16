@@ -222,12 +222,12 @@ verify_killer(killer(Instance), Solution) :-
 
 % ------------------------------- Encode ------------------------------- %
 
-encode_killer_Declare_Ints(Instance, Map, Constrains) :-
+encode_killer_Declare_Ints(Instance, Map, Constraints) :-
     % Make a list of constraint for all variables K that are in Instance (Size in declaration is known)
     findall(new_int(K,Ins_K,Ins_K), (member(cell(I,J)=Ins_K, Instance), member(cell(I,J)=K, Map)), Cs2),
     % Make a list of constraint for all variables K that are not in Instance (Size in declaration between 1 and 9)
     findall(new_int(K,1,9), (not(member(cell(I,J)=_K, Instance)), member(cell(I,J)=K, Map)), Cs1),
-    append(Cs1, Cs2, Constrains).
+    append(Cs1, Cs2, Constraints).
 
 encode_unique_row(I, Map, int_array_allDiff(Row)) :-
     findall(K, member(cell(I,_J)=K, Map), Row).
@@ -243,52 +243,52 @@ encode_killer_line(Map, Constraints) :-
 encode_unique_box(I, J, Map, int_array_allDiff(Box)) :-
     findall(K, (box(I, J, NewI, NewJ), member(cell(NewI,NewJ)=K, Map)), Box).
 
-encode_killer_box(Map, Constrains) :-
-    findall(Box_C, (member(I,[1,4,7]), member(J,[1,4,7]), encode_unique_box(I, J, Map, Box_C)), Constrains).
+encode_killer_box(Map, Constraints) :-
+    findall(Box_C, (member(I,[1,4,7]), member(J,[1,4,7]), encode_unique_box(I, J, Map, Box_C)), Constraints).
 
-encode_unique_knight(I, J, Map, Constrains) :-
+encode_unique_knight(I, J, Map, Constraints) :-
     % Find all knight moves cell's K values for current (I,J)
     findall(K, (knight_move(I, J, NewI, NewJ), member(cell(NewI,NewJ)=K, Map)), Knight_Moves),
     % Get relevent K for Current I,J
     member(cell(I,J)=Curr_K, Map),
     % Make sure they are all different from K
-    findall(int_neq(Curr_K,K), member(K, Knight_Moves), Constrains). 
+    findall(int_neq(Curr_K,K), member(K, Knight_Moves), Constraints). 
 
 encode_killer_knight(Map, Constraints) :-
     findall(Knight_Move_C, (between(1,9,I), between(1,9,J), encode_unique_knight(I, J, Map, Knight_Move_C)), Knight_Move_Cs),
-    append(Knight_Move_Cs, Constrains).
+    append(Knight_Move_Cs, Constraints).
 
-encode_unique_king(I, J, Map, Constrains) :-
+encode_unique_king(I, J, Map, Constraints) :-
     % Find all king moves cell's K values for current (I,J)
-    findall(K, (King_move(I, J, NewI, NewJ), member(cell(NewI,NewJ)=K, Map)), King_Moves),
+    findall(K, (king_move(I, J, NewI, NewJ), member(cell(NewI,NewJ)=K, Map)), King_Moves),
     % Get relevent K for Current I,J
     member(cell(I,J)=Curr_K, Map),
     % Make sure they are all different from K
-    findall(int_neq(Curr_K,K), member(K, King_Moves), Constrains). 
+    findall(int_neq(Curr_K,K), member(K, King_Moves), Constraints). 
 
-encode_killer_King(Map, Constraints) :-
+encode_killer_king(Map, Constraints) :-
     findall(King_Move_C, (between(1,9,I), between(1,9,J), encode_unique_king(I, J, Map, King_Move_C)), King_Move_Cs),
-    append(King_Move_Cs, Constrains).
+    append(King_Move_Cs, Constraints).
 
-encode_unique_neighbor(I, J, Map, Constrains) :-
+encode_unique_neighbor(I, J, Map, Constraints) :-
     % Find all neighbor moves cell's K values for current (I,J)
-    findall(K1, (Neighbor_move(I, J, NewI, NewJ), member(cell(NewI,NewJ)=K1, Map)), Neighbor_Moves),
+    findall(K1, (neighbor_move(I, J, NewI, NewJ), member(cell(NewI,NewJ)=K1, Map)), Neighbor_Moves),
     % Get relevent K for Current I,J
     member(cell(I,J)=Curr_K, Map),
 
     % Make sure |K-N|<=2 for any neighbor N by getting Min and Max for evey comparison between Curr_K and K in Neighbor_Moves,
     % then add the number 2 to the Min, and make sure it is leq than Max
-    findall([int_max(Curr_K,K2,MaxK), int_min(Curr_K,K2,MinK), int_plus(MinK,Two,TempK), int_leq(TempK,MaxK)], member(K2, Neighbor_Moves), Max_Min_Cs).
-    append([new_int(Two,2,2)|Max_Min_Cs], Constrains).
+    findall([int_max(Curr_K,K2,MaxK), int_min(Curr_K,K2,MinK), int_plus(MinK,Two,TempK), int_leq(TempK,MaxK)], member(K2, Neighbor_Moves), Max_Min_Cs),
+    append([new_int(Two,2,2)|Max_Min_Cs], Constraints).
 
 encode_killer_neighbor(Map, Constraints) :-
     findall(Neighbor_Move_C, (between(1,9,I), between(1,9,J), encode_unique_neighbor(I, J, Map, Neighbor_Move_C)), Neighbor_Move_Cs),
-    append(Neighbor_Move_Cs, Constrains).
+    append(Neighbor_Move_Cs, Constraints).
     
 % Encoding!
-encode_killer(Instance, Map, Constraints) :-
+encode_killer(killer(Instance), Map, Constraints) :-
     % Build Map as a list with int variables K at each coordinate (I,J) of the board
-    findall(cell(I,J)=K, (between(1,9,I),between(1,9,J)), Map),
+    findall(cell(I,J)=_K, (between(1,9,I),between(1,9,J)), Map),
 
     % Declare each number K
     encode_killer_Declare_Ints(Instance, Map, Cs1),
@@ -311,10 +311,10 @@ encode_killer(Instance, Map, Constraints) :-
 % The map is in the solution format, just decode each cell
 % Decoding!
 decode_killer(Map, Solution):-
-    findall(cell(I,J)=DecodedK, (decodeInt(K,DecodedBlock), member(cell(I,J)=K, Map)), Solution).
+    findall(cell(I,J)=DecodedK, (decodeInt(K,DecodedK), member(cell(I,J)=K, Map)), Solution).
 
 % -------------------------------- Solve -------------------------------- %
 
 % Solving!
 solve_killer(Instance, Solution) :-
-    runExpr(Instance, Map, encode_killer, decode_killer, verify_killer).
+    runExpr(Instance, Solution, encode_killer, decode_killer, verify_killer).
