@@ -236,10 +236,11 @@ encode_row(ITarget, [cell(I,_J)=MK|MRest], Row) :-
     encode_row(ITarget, MRest, RPrev).
 
 % Create Constraints for each row
-encode_unique_row(9, _Map, []).
+encode_unique_row(I, _Map, []) :-
+    I < 1.
 encode_unique_row(I, Map, [int_array_allDiff(Row)|Constraints]) :-
     encode_row(I, Map, Row),
-    NextI is I+1,
+    NextI is I-1,
     encode_unique_row(NextI, Map, Constraints).
 
 % Builds Row J
@@ -249,16 +250,17 @@ encode_column(JTarget, [cell(_I,J)=MK|MRest], Column) :-
     encode_column(JTarget, MRest, CPrev).
 
 % Create Constraints for each column
-encode_unique_column(9, _Map, []).
+encode_unique_column(J, _Map, []) :-
+    J < 1.
 encode_unique_column(J, Map, [int_array_allDiff(Column)|Constraints]) :-
     encode_column(J, Map, Column),
-    NextJ is J+1,
+    NextJ is J-1,
     encode_unique_column(NextJ, Map, Constraints).
 
 % Create Constraints for all rows and all columns
 encode_killer_line(Map, Constraints) :-
-    encode_unique_row(0, Map, Cs1),
-    encode_unique_column(0, Map, Cs2),
+    encode_unique_row(9, Map, Cs1),
+    encode_unique_column(9, Map, Cs2),
     append(Cs1, Cs2, Constraints).
 
 
