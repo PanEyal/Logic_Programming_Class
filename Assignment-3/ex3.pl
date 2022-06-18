@@ -222,12 +222,12 @@ verify_killer(killer(Instance), Solution) :-
 
 % ------------------------------- Encode ------------------------------- %
 
-encode_killer_Declare_Ints(Instance, Map, Constraints) :-
-    % Make a list of constraint for all variables K that are in Instance (Size in declaration is known)
-    findall(new_int(K,Ins_K,Ins_K), (member(cell(I,J)=Ins_K, Instance), member(cell(I,J)=K, Map)), Cs2),
-    % Make a list of constraint for all variables K that are not in Instance (Size in declaration between 1 and 9)
-    findall(new_int(K,1,9), (not(member(cell(I,J)=_K, Instance)), member(cell(I,J)=K, Map)), Cs1),
-    append(Cs1, Cs2, Constraints).
+% Make a list of constraint for all variables K, If the cell is a member of Instance,
+% Make a special declaration (Size is K as in the Instance), else regular (Size is between 1 and 9).
+encode_killer_Declare_Ints(_Instance, [], []).
+encode_killer_Declare_Ints(Instance, [cell(I,J)=MK|MRest], [Int_Dec|Constrains]) :-
+    (member(cell(I,J)=K, Instance) -> Int_Dec = new_int(MK,K,K) ; Int_Dec = new_int(MK,1,9)),
+    encode_killer_Declare_Ints(Instance, MRest, Constrains).
 
 encode_unique_row(I, Map, int_array_allDiff(Row)) :-
     findall(K, member(cell(I,_J)=K, Map), Row).
