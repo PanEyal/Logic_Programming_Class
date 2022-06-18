@@ -229,16 +229,50 @@ encode_killer_Declare_Ints(Instance, [cell(I,J)=MK|MRest], [Int_Dec|Constrains])
     (member(cell(I,J)=K, Instance) -> Int_Dec = new_int(MK,K,K) ; Int_Dec = new_int(MK,1,9)),
     encode_killer_Declare_Ints(Instance, MRest, Constrains).
 
-encode_unique_row(I, Map, int_array_allDiff(Row)) :-
-    findall(K, member(cell(I,_J)=K, Map), Row).
+% Builds Row I
+encode_row(_ITarget, [], []).
+encode_row(ITarget, [cell(I,_J)=MK|MRest], Row) :-
+    (ITarget =:= I -> Row = [MK|RPrev] ; Row = RPrev),
+    encode_row(ITarget, MRest, RPrev).
 
-encode_unique_column(J, Map, int_array_allDiff(Column)) :-
-    findall(K, member(cell(_I,J)=K, Map), Column).
+% Create Constraints for each row
+encode_unique_row(Map, Constraints) :-
+    encode_row(1, Map, Row1),
+    encode_row(2, Map, Row2),
+    encode_row(3, Map, Row3),
+    encode_row(4, Map, Row4),
+    encode_row(5, Map, Row5),
+    encode_row(6, Map, Row6),
+    encode_row(7, Map, Row7),
+    encode_row(8, Map, Row8),
+    encode_row(9, Map, Row9),
+    Constraints = [int_array_allDiff(Row1),int_array_allDiff(Row2),int_array_allDiff(Row3),int_array_allDiff(Row4),int_array_allDiff(Row5),int_array_allDiff(Row6),int_array_allDiff(Row7),int_array_allDiff(Row8),int_array_allDiff(Row9)].
 
+% Builds Row J
+encode_column(_JTarget, [], []).
+encode_column(JTarget, [cell(_I,J)=MK|MRest], Column) :-
+    (JTarget =:= J -> Column = [MK|CPrev] ; Column = CPrev),
+    encode_column(JTarget, MRest, CPrev).
+
+% Create Constraints for each column
+encode_unique_column(Map, Constraints) :-
+    encode_column(1, Map, Column1),
+    encode_column(2, Map, Column2),
+    encode_column(3, Map, Column3),
+    encode_column(4, Map, Column4),
+    encode_column(5, Map, Column5),
+    encode_column(6, Map, Column6),
+    encode_column(7, Map, Column7),
+    encode_column(8, Map, Column8),
+    encode_column(9, Map, Column9),
+    Constraints = [int_array_allDiff(Column1),int_array_allDiff(Column2),int_array_allDiff(Column3),int_array_allDiff(Column4),int_array_allDiff(Column5),int_array_allDiff(Column6),int_array_allDiff(Column7),int_array_allDiff(Column8),int_array_allDiff(Column9)].
+
+% Create Constraints for all rows and all columns
 encode_killer_line(Map, Constraints) :-
-    findall(Row_C, (between(1,9,I), encode_unique_row(I, Map, Row_C)), Row_Cs),
-    findall(Column_C, (between(1,9,J), encode_unique_column(J, Map, Column_C)), Column_Cs),
-    append(Row_Cs, Column_Cs, Constraints).
+    encode_unique_row(Map, Cs1),
+    encode_unique_column(Map, Cs2),
+    append(Cs1, Cs2, Constraints).
+
 
 encode_unique_box(I, J, Map, int_array_allDiff(Box)) :-
     findall(K, (box(I, J, NewI, NewJ), member(cell(NewI,NewJ)=K, Map)), Box).
