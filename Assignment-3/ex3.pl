@@ -265,13 +265,12 @@ encode_killer_line(Map, Constraints) :-
 
 encode_box(_ITarget, _JTarget, [], []).
 encode_box(ITarget, JTarget, [cell(I,J)=MK|MRest], Box) :-
-    (box(ITarget, JTarget, I, J) -> Box = [MK|BPrev], writeln(I:J) ; Box = BPrev),
+    (box(ITarget, JTarget, I, J) -> Box = [MK|BPrev] ; Box = BPrev),
     encode_box(ITarget, JTarget, MRest, BPrev).
 
 encode_unique_box_J(_I, J, _Map, []) :-
     J < 1.
 encode_unique_box_J(I, J, Map, [int_array_allDiff(Box)|Constraints]) :-
-    writeln(0:I:J),
     encode_box(I, J, Map, Box),
     NextJ is J-3,
     encode_unique_box_J(I, NextJ, Map, Constraints).
@@ -287,29 +286,65 @@ encode_unique_box_I(I, Map, Constraints) :-
 encode_killer_box(Map, Constraints) :-
     encode_unique_box_I(7, Map, Constraints).
 
-encode_unique_knight(I, J, Map, Constraints) :-
-    % Find all knight moves cell's K values for current (I,J)
-    findall(K, (knight_move(I, J, NewI, NewJ), member(cell(NewI,NewJ)=K, Map)), Knight_Moves),
-    % Get relevent K for Current I,J
-    member(cell(I,J)=Curr_K, Map),
-    % Make sure they are all different from K
-    findall(int_neq(Curr_K,K), member(K, Knight_Moves), Constraints). 
+encode_knight(_ITarget, _JTarget, _Map, [], []).
+encode_knight(ITarget, JTarget, Map, [cell(I,J)=MK|MRest], Knight_Cs) :-
+    (   % If
+        knight_move(ITarget, JTarget, I, J) ->
+        % Then
+        member(cell(ITarget, JTarget)=MKTarget, Map), Knight_Cs = [int_neq(MKTarget, MK)|KPrev_Cs]
+    ;   % Else
+        Knight_Cs = KPrev_Cs
+    ),
+    encode_knight(ITarget, JTarget, Map, MRest, KPrev_Cs).
+
+encode_unique_knight_J(_I, J, _Map, []) :-
+    J < 1.
+encode_unique_knight_J(I, J, Map, Constraints) :-
+    encode_knight(I, J, Map, Map, Cs1),
+    NextJ is J-1,
+    encode_unique_knight_J(I, NextJ, Map, Cs2),
+    append(Cs1, Cs2, Constraints).
+
+encode_unique_knight_I(I, _Map, []) :-
+    I < 1.
+encode_unique_knight_I(I, Map, Constraints) :-
+    encode_unique_knight_J(I, 9, Map, Cs1),
+    NextI is I-1,
+    encode_unique_knight_I(NextI, Map, Cs2),
+    append([Cs1, Cs2], Constraints).
 
 encode_killer_knight(Map, Constraints) :-
-    findall(Knight_Move_C, (between(1,9,I), between(1,9,J), encode_unique_knight(I, J, Map, Knight_Move_C)), Knight_Move_Cs),
-    append(Knight_Move_Cs, Constraints).
+    encode_unique_knight_I(9, Map, Constraints).
 
-encode_unique_king(I, J, Map, Constraints) :-
-    % Find all king moves cell's K values for current (I,J)
-    findall(K, (king_move(I, J, NewI, NewJ), member(cell(NewI,NewJ)=K, Map)), King_Moves),
-    % Get relevent K for Current I,J
-    member(cell(I,J)=Curr_K, Map),
-    % Make sure they are all different from K
-    findall(int_neq(Curr_K,K), member(K, King_Moves), Constraints). 
+encode_king(_ITarget, _JTarget, _Map, [], []).
+encode_king(ITarget, JTarget, Map, [cell(I,J)=MK|MRest], King_Cs) :-
+    (   % If
+        king_move(ITarget, JTarget, I, J) ->
+        % Then
+        member(cell(ITarget, JTarget)=MKTarget, Map), King_Cs = [int_neq(MKTarget, MK)|KPrev_Cs]
+    ;   % Else
+        King_Cs = KPrev_Cs),
+    encode_king(ITarget, JTarget, Map, MRest, KPrev_Cs).
+
+encode_unique_king_J(_I, J, _Map, []) :-
+    J < 1.
+encode_unique_king_J(I, J, Map, Constraints) :-
+    encode_king(I, J, Map, Map, Cs1),
+    NextJ is J-1,
+    encode_unique_king_J(I, NextJ, Map, Cs2),
+    append(Cs1,Cs2,Constraints).
+
+encode_unique_king_I(I, _Map, []) :-
+    I < 1.
+encode_unique_king_I(I, Map, Constraints) :-
+    encode_unique_king_J(I, 9, Map, Cs1),
+    NextI is I-1,
+    encode_unique_king_I(NextI, Map, Cs2),
+    append([Cs1, Cs2], Constraints).
 
 encode_killer_king(Map, Constraints) :-
-    findall(King_Move_C, (between(1,9,I), between(1,9,J), encode_unique_king(I, J, Map, King_Move_C)), King_Move_Cs),
-    append(King_Move_Cs, Constraints).
+    encode_unique_king_I(9, Map, Constraints).
+
 
 encode_unique_neighbor(I, J, Map, Constraints) :-
     % Find all neighbor moves cell's K values for current (I,J)
