@@ -263,12 +263,29 @@ encode_killer_line(Map, Constraints) :-
     encode_unique_column(9, Map, Cs2),
     append(Cs1, Cs2, Constraints).
 
+encode_box(_ITarget, _JTarget, [], []).
+encode_box(ITarget, JTarget, [cell(I,J)=MK|MRest], Box) :-
+    (box(ITarget, JTarget, I, J) -> Box = [MK|BPrev], writeln(I:J) ; Box = BPrev),
+    encode_box(ITarget, JTarget, MRest, BPrev).
 
-encode_unique_box(I, J, Map, int_array_allDiff(Box)) :-
-    findall(K, (box(I, J, NewI, NewJ), member(cell(NewI,NewJ)=K, Map)), Box).
+encode_unique_box_J(_I, J, _Map, []) :-
+    J < 1.
+encode_unique_box_J(I, J, Map, [int_array_allDiff(Box)|Constraints]) :-
+    writeln(0:I:J),
+    encode_box(I, J, Map, Box),
+    NextJ is J-3,
+    encode_unique_box_J(I, NextJ, Map, Constraints).
+
+encode_unique_box_I(I, _Map, []) :-
+    I < 1.
+encode_unique_box_I(I, Map, Constraints) :-
+    encode_unique_box_J(I, 7, Map, Cs1),
+    NextI is I-3,
+    encode_unique_box_I(NextI, Map, Cs2),
+    append([Cs1, Cs2], Constraints).
 
 encode_killer_box(Map, Constraints) :-
-    findall(Box_C, (member(I,[1,4,7]), member(J,[1,4,7]), encode_unique_box(I, J, Map, Box_C)), Constraints).
+    encode_unique_box_I(7, Map, Constraints).
 
 encode_unique_knight(I, J, Map, Constraints) :-
     % Find all knight moves cell's K values for current (I,J)
