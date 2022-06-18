@@ -99,6 +99,9 @@ kakuroSolve(Instance,Solution):-
 % Instance Example: Killer([cell(5,3) = 1, cell(6,7) = 2, cell(4,5) = 6, cell(7,9) = 8])
 % Solution 5 Example: [cell(1,1)=1,cell(1,2)=2,cell(1,3)=3,cell(1,4)=4,cell(1,5)=5,cell(2,1)=1,cell(2,2)=2,cell(2,3)=3,cell(2,4)=4,cell(2,5)=5,cell(3,1)=1,cell(3,2)=2,cell(3,3)=3,cell(3,4)=4,cell(3,5)=5,cell(4,1)=1,cell(4,2)=2,cell(4,3)=3,cell(4,4)=4,cell(4,5)=5,cell(5,1)=1,cell(5,2)=2,cell(5,3)=3,cell(5,4)=4,cell(5,5)=5]
 
+% Instance Example: killer([cell(5,3) = 1, cell(6,7) = 2, cell(4,5) = 6, cell(7,9) = 8])
+% killer([cell(5,3) = 1, cell(6,7) = 2, cell(4,5) = 6, cell(7,9) = 8])
+% killer([cell(5,3) = 1, cell(6,7) = 2, cell(4,5) = 6, cell(7,9) = 8])
 % ------------------------------- Verify ------------------------------- %
 
 % Make sure that board size is 9*9 = 81 and holds all cells (between 1 and 9)
@@ -187,10 +190,10 @@ verify_killer_king(Solution) :-
 % Make sure that the values of any two cells which appear next to each other in a row, or column
 % must have absolute difference of at least 2.
 
-neighbor_move(I, J, NewI, NewJ) :- NewI is I + 1, NewJ is J + 1.
-neighbor_move(I, J, NewI, NewJ) :- NewI is I + 1, NewJ is J - 1.
-neighbor_move(I, J, NewI, NewJ) :- NewI is I - 1, NewJ is J + 1.
-neighbor_move(I, J, NewI, NewJ) :- NewI is I - 1, NewJ is J - 1.
+neighbor_move(I, J, I, NewJ) :- NewJ is J + 1.
+neighbor_move(I, J, I, NewJ) :- NewJ is J - 1.
+neighbor_move(I, J, NewI, J) :- NewI is I + 1.
+neighbor_move(I, J, NewI, J) :- NewI is I - 1.
 
 verify_unique_neighbor(I, J, Solution) :-
     % Find all Neighbors cell's K values for current (I,J)
@@ -345,27 +348,42 @@ encode_unique_king_I(I, Map, Constraints) :-
 encode_killer_king(Map, Constraints) :-
     encode_unique_king_I(9, Map, Constraints).
 
+encode_neighbor(_ITarget, _JTarget, _Map, [], _Two, []).
+encode_neighbor(ITarget, JTarget, Map, [cell(I,J)=MK|MRest], Two, Neighbor_Cs) :-
+    (   % If
+        neighbor_move(ITarget, JTarget, I, J) ->
+        % Then
+        member(cell(ITarget, JTarget)=MKTarget, Map),
+        Neighbor_Cs = [new_int(SubK,-8,8), int_plus(SubK,MK,MKTarget), new_int(AbsK,0,8), int_abs(SubK, AbsK), int_leq(Two, AbsK)|NPrev_Cs]
+    ;   % Else
+        Neighbor_Cs = NPrev_Cs
+    ),
+    encode_neighbor(ITarget, JTarget, Map, MRest, Two, NPrev_Cs).
 
-encode_unique_neighbor(I, J, Map, Constraints) :-
-    % Find all neighbor moves cell's K values for current (I,J)
-    findall(K1, (neighbor_move(I, J, NewI, NewJ), member(cell(NewI,NewJ)=K1, Map)), Neighbor_Moves),
-    % Get relevent K for Current I,J
-    member(cell(I,J)=Curr_K, Map),
+encode_unique_neighbor_J(_I, J, _Map, _Two, []) :-
+    J < 1.
+encode_unique_neighbor_J(I, J, Map, Two, Constraints) :-
+    encode_neighbor(I, J, Map, Map, Two, Cs1),
+    NextJ is J-1,
+    encode_unique_neighbor_J(I, NextJ, Map, Two, Cs2),
+    append(Cs1, Cs2, Constraints).
 
-    % Make sure |K-N|<=2 for any neighbor N by getting Min and Max for evey comparison between Curr_K and K in Neighbor_Moves,
-    % then add the number 2 to the Min, and make sure it is leq than Max
-    findall([int_max(Curr_K,K2,MaxK), int_min(Curr_K,K2,MinK), int_plus(MinK,Two,TempK), int_leq(TempK,MaxK)], member(K2, Neighbor_Moves), Max_Min_Cs),
-    append([new_int(Two,2,2)|Max_Min_Cs], Constraints).
+encode_unique_neighbor_I(I, _Map, _Two, []) :-
+    I < 1.
+encode_unique_neighbor_I(I, Map, Two, Constraints) :-
+    encode_unique_neighbor_J(I, 9, Map, Two, Cs1),
+    NextI is I-1,
+    encode_unique_neighbor_I(NextI, Map, Two, Cs2),
+    append([Cs1, Cs2], Constraints).
 
-encode_killer_neighbor(Map, Constraints) :-
-    findall(Neighbor_Move_C, (between(1,9,I), between(1,9,J), encode_unique_neighbor(I, J, Map, Neighbor_Move_C)), Neighbor_Move_Cs),
-    append(Neighbor_Move_Cs, Constraints).
+encode_killer_neighbor(Map, [new_int(Two,2,2)|Constraints]) :-
+    encode_unique_neighbor_I(9, Map, Two, Constraints).
     
 % Encoding!
 encode_killer(killer(Instance), Map, Constraints) :-
     % Build Map as a list with int variables K at each coordinate (I,J) of the board
     findall(cell(I,J)=_K, (between(1,9,I),between(1,9,J)), Map),
-
+    
     % Declare each number K
     encode_killer_Declare_Ints(Instance, Map, Cs1),
 
@@ -379,7 +397,6 @@ encode_killer(killer(Instance), Map, Constraints) :-
     encode_killer_king(Map, Cs5),
     % Constraints for each neighbor.
     encode_killer_neighbor(Map, Cs6),
-    
     append([Cs1,Cs2,Cs3,Cs4,Cs5,Cs6], Constraints).
 
 % ------------------------------- Decode ------------------------------- %
@@ -387,7 +404,7 @@ encode_killer(killer(Instance), Map, Constraints) :-
 % The map is in the solution format, just decode each cell
 % Decoding!
 decode_killer(Map, Solution):-
-    findall(cell(I,J)=DecodedK, (decodeInt(K,DecodedK), member(cell(I,J)=K, Map)), Solution).
+    findall(cell(I,J)=DecodedK, (between(1,9,I),between(1,9,J), member(cell(I,J)=K, Map), decodeInt(K,DecodedK)), Solution).
 
 % -------------------------------- Solve -------------------------------- %
 
