@@ -1,16 +1,18 @@
+/**** I, Pan Eyal (208722058) assert that the work I submitted is entirely my
+own. I have not received any part from any other student in the class (or other
+source), nor did I give parts of it for use to others. I have clearly marked in
+the comments of my program any code taken from an external source. *****/
 
-user:file_search_path(beeCompiler, './beeCompiler').
 user:file_search_path(aux, './bApplications/auxs').
 
-:- use_module(beeCompiler(bCompiler)).
 :- use_module(aux(auxRunExpr)).
+:- use_module(aux(auxRunExprAll), except([decodeIntMatrix/2, decodeIntArray/2, printHeader/0, decodeInt/2])).
+
+% Note to myslf, To show full solution on prolog run the comand: set_prolog_flag(answer_write_options,[max_depth(0)]).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% KAKURO %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-% Instance Example: [14=[I11,I12,I13,I14],17=[I3,I4,I5,I6],3=[I7,I8],4=[I9,I10],11=[I3,I7],6=[I1,I2],8=[I4,I8,I11],3=[I1,I5],18=[I2,I6,I9,I13],3=[I10,I14]]
-% Solution Example: [14=[5,1,6,2],17=[9,2,1,5],3=[2,1],4=[3,1],11=[9,2],6=[2,4],8=[2,1,5],3=[2,1],18=[4,5,3,6],3=[1,2]]
 
 % ------------------------------- Verify ------------------------------- %
 
@@ -92,16 +94,13 @@ kakuroDecode([(ClueSum=Block)|Rest],[(ClueSum=DecodedBlock)|DecodedRest]):-
 kakuroSolve(Instance,Solution):-
     runExpr(Instance, Solution, kakuroEncode, kakuroDecode, kakuroVerify).
 
+% Kakuro Instance Example: [14=[I11,I12,I13,I14],17=[I3,I4,I5,I6],3=[I7,I8],4=[I9,I10],11=[I3,I7],6=[I1,I2],8=[I4,I8,I11],3=[I1,I5],18=[I2,I6,I9,I13],3=[I10,I14]]
+% Kakuro Solution Example: [14=[5,1,6,2],17=[9,2,1,5],3=[2,1],4=[3,1],11=[9,2],6=[2,4],8=[2,1,5],3=[2,1],18=[4,5,3,6],3=[1,2]]
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% SUDUKO %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% Instance Example: Killer([cell(5,3) = 1, cell(6,7) = 2, cell(4,5) = 6, cell(7,9) = 8])
-% Solution 5 Example: [cell(1,1)=1,cell(1,2)=2,cell(1,3)=3,cell(1,4)=4,cell(1,5)=5,cell(2,1)=1,cell(2,2)=2,cell(2,3)=3,cell(2,4)=4,cell(2,5)=5,cell(3,1)=1,cell(3,2)=2,cell(3,3)=3,cell(3,4)=4,cell(3,5)=5,cell(4,1)=1,cell(4,2)=2,cell(4,3)=3,cell(4,4)=4,cell(4,5)=5,cell(5,1)=1,cell(5,2)=2,cell(5,3)=3,cell(5,4)=4,cell(5,5)=5]
-
-% Instance Example: killer([cell(5,3) = 1, cell(6,7) = 2, cell(4,5) = 6, cell(7,9) = 8])
-% killer([cell(5,3) = 1, cell(6,7) = 2, cell(4,5) = 6, cell(7,9) = 8])
-% killer([cell(5,3) = 1, cell(6,7) = 2, cell(4,5) = 6, cell(7,9) = 8])
 % ------------------------------- Verify ------------------------------- %
 
 % Make sure that board size is 9*9 = 81 and holds all cells (between 1 and 9)
@@ -124,8 +123,8 @@ verify_killer_line(Solution) :-
     forall(between(1,9,J), verify_unique_column(J, Solution)).
 
 % Make sure that each box consist of all-different values.
-% box/4 function takes (I,J) as Left Upper corner of the box,
-% and return true if (NewI,NewJ) is in the same Box
+% box(+,+,-,-) function takes cell(I,J) as Left Upper corner of the box,
+% and return true if cell(NewI,NewJ) is in the same Box
 box(I, J, I, J).
 box(I, J, I, NewJ) :- NewJ is J + 1.
 box(I, J, I, NewJ) :- NewJ is J + 2.
@@ -229,16 +228,28 @@ verify_killer(killer(Instance), Solution) :-
 % Make a special declaration (Size is K as in the Instance), else regular (Size is between 1 and 9).
 encode_killer_Declare_Ints(_Instance, [], []).
 encode_killer_Declare_Ints(Instance, [cell(I,J)=MK|MRest], [Int_Dec|Constrains]) :-
-    (member(cell(I,J)=K, Instance) -> Int_Dec = new_int(MK,K,K) ; Int_Dec = new_int(MK,1,9)),
+    (   % If
+        member(cell(I,J)=K, Instance)
+    ->  % Then
+        Int_Dec = new_int(MK,K,K)
+    ;   % Else
+        Int_Dec = new_int(MK,1,9)
+    ),
     encode_killer_Declare_Ints(Instance, MRest, Constrains).
 
-% Builds Row I
+% Builds row I
 encode_row(_ITarget, [], []).
 encode_row(ITarget, [cell(I,_J)=MK|MRest], Row) :-
-    (ITarget =:= I -> Row = [MK|RPrev] ; Row = RPrev),
+    (   % If
+        ITarget =:= I
+    ->  % Then
+        Row = [MK|RPrev]
+    ;   % Else
+        Row = RPrev
+    ),
     encode_row(ITarget, MRest, RPrev).
 
-% Create Constraints for each row
+% Create constraints for each row
 encode_unique_row(I, _Map, []) :-
     I < 1.
 encode_unique_row(I, Map, [int_array_allDiff(Row)|Constraints]) :-
@@ -246,13 +257,18 @@ encode_unique_row(I, Map, [int_array_allDiff(Row)|Constraints]) :-
     NextI is I-1,
     encode_unique_row(NextI, Map, Constraints).
 
-% Builds Row J
+% Builds row J
 encode_column(_JTarget, [], []).
 encode_column(JTarget, [cell(_I,J)=MK|MRest], Column) :-
-    (JTarget =:= J -> Column = [MK|CPrev] ; Column = CPrev),
+    (   % If
+        JTarget =:= J
+    ->  % Then
+        Column = [MK|CPrev]
+    ;   % Else
+        Column = CPrev),
     encode_column(JTarget, MRest, CPrev).
 
-% Create Constraints for each column
+% Create constraints for each column
 encode_unique_column(J, _Map, []) :-
     J < 1.
 encode_unique_column(J, Map, [int_array_allDiff(Column)|Constraints]) :-
@@ -260,99 +276,47 @@ encode_unique_column(J, Map, [int_array_allDiff(Column)|Constraints]) :-
     NextJ is J-1,
     encode_unique_column(NextJ, Map, Constraints).
 
-% Create Constraints for all rows and all columns
-encode_killer_line(Map, Constraints) :-
-    encode_unique_row(9, Map, Cs1),
-    encode_unique_column(9, Map, Cs2),
-    append(Cs1, Cs2, Constraints).
-
+% Create constraints for each box.
+% Each ITarget and JTarget mod 9 must be equal to 1. (Left upper cell of each box)
 encode_box(_ITarget, _JTarget, [], []).
 encode_box(ITarget, JTarget, [cell(I,J)=MK|MRest], Box) :-
-    (box(ITarget, JTarget, I, J) -> Box = [MK|BPrev] ; Box = BPrev),
+    (   % If
+        box(ITarget, JTarget, I, J)
+    ->  % Then
+        Box = [MK|BPrev]
+    ;   % Else
+        Box = BPrev),
     encode_box(ITarget, JTarget, MRest, BPrev).
 
-encode_unique_box_J(_I, J, _Map, []) :-
-    J < 1.
-encode_unique_box_J(I, J, Map, [int_array_allDiff(Box)|Constraints]) :-
-    encode_box(I, J, Map, Box),
-    NextJ is J-3,
-    encode_unique_box_J(I, NextJ, Map, Constraints).
-
-encode_unique_box_I(I, _Map, []) :-
-    I < 1.
-encode_unique_box_I(I, Map, Constraints) :-
-    encode_unique_box_J(I, 7, Map, Cs1),
-    NextI is I-3,
-    encode_unique_box_I(NextI, Map, Cs2),
-    append([Cs1, Cs2], Constraints).
-
-encode_killer_box(Map, Constraints) :-
-    encode_unique_box_I(7, Map, Constraints).
-
+% Create constraints for each knight move from cell(ITarget, JTarget).
 encode_knight(_ITarget, _JTarget, _Map, [], []).
 encode_knight(ITarget, JTarget, Map, [cell(I,J)=MK|MRest], Knight_Cs) :-
     (   % If
-        knight_move(ITarget, JTarget, I, J) ->
-        % Then
+        knight_move(ITarget, JTarget, I, J)
+    ->  % Then
         member(cell(ITarget, JTarget)=MKTarget, Map), Knight_Cs = [int_neq(MKTarget, MK)|KPrev_Cs]
     ;   % Else
         Knight_Cs = KPrev_Cs
     ),
     encode_knight(ITarget, JTarget, Map, MRest, KPrev_Cs).
 
-encode_unique_knight_J(_I, J, _Map, []) :-
-    J < 1.
-encode_unique_knight_J(I, J, Map, Constraints) :-
-    encode_knight(I, J, Map, Map, Cs1),
-    NextJ is J-1,
-    encode_unique_knight_J(I, NextJ, Map, Cs2),
-    append(Cs1, Cs2, Constraints).
-
-encode_unique_knight_I(I, _Map, []) :-
-    I < 1.
-encode_unique_knight_I(I, Map, Constraints) :-
-    encode_unique_knight_J(I, 9, Map, Cs1),
-    NextI is I-1,
-    encode_unique_knight_I(NextI, Map, Cs2),
-    append([Cs1, Cs2], Constraints).
-
-encode_killer_knight(Map, Constraints) :-
-    encode_unique_knight_I(9, Map, Constraints).
-
+% Create constraints for each king move from cell(ITarget, JTarget).
 encode_king(_ITarget, _JTarget, _Map, [], []).
 encode_king(ITarget, JTarget, Map, [cell(I,J)=MK|MRest], King_Cs) :-
     (   % If
-        king_move(ITarget, JTarget, I, J) ->
-        % Then
+        king_move(ITarget, JTarget, I, J)
+    ->  % Then
         member(cell(ITarget, JTarget)=MKTarget, Map), King_Cs = [int_neq(MKTarget, MK)|KPrev_Cs]
     ;   % Else
         King_Cs = KPrev_Cs),
     encode_king(ITarget, JTarget, Map, MRest, KPrev_Cs).
 
-encode_unique_king_J(_I, J, _Map, []) :-
-    J < 1.
-encode_unique_king_J(I, J, Map, Constraints) :-
-    encode_king(I, J, Map, Map, Cs1),
-    NextJ is J-1,
-    encode_unique_king_J(I, NextJ, Map, Cs2),
-    append(Cs1,Cs2,Constraints).
-
-encode_unique_king_I(I, _Map, []) :-
-    I < 1.
-encode_unique_king_I(I, Map, Constraints) :-
-    encode_unique_king_J(I, 9, Map, Cs1),
-    NextI is I-1,
-    encode_unique_king_I(NextI, Map, Cs2),
-    append([Cs1, Cs2], Constraints).
-
-encode_killer_king(Map, Constraints) :-
-    encode_unique_king_I(9, Map, Constraints).
-
+% Create constraints for each neighbor move from cell(ITarget, JTarget).
 encode_neighbor(_ITarget, _JTarget, _Map, [], _Two, []).
 encode_neighbor(ITarget, JTarget, Map, [cell(I,J)=MK|MRest], Two, Neighbor_Cs) :-
     (   % If
-        neighbor_move(ITarget, JTarget, I, J) ->
-        % Then
+        neighbor_move(ITarget, JTarget, I, J)
+    ->  % Then
         member(cell(ITarget, JTarget)=MKTarget, Map),
         Neighbor_Cs = [new_int(SubK,-8,8), int_plus(SubK,MK,MKTarget), new_int(AbsK,0,8), int_abs(SubK, AbsK), int_leq(Two, AbsK)|NPrev_Cs]
     ;   % Else
@@ -360,54 +324,86 @@ encode_neighbor(ITarget, JTarget, Map, [cell(I,J)=MK|MRest], Two, Neighbor_Cs) :
     ),
     encode_neighbor(ITarget, JTarget, Map, MRest, Two, NPrev_Cs).
 
-encode_unique_neighbor_J(_I, J, _Map, _Two, []) :-
+% Scan all J values and create the relevant constraints for cell(I, J).
+encode_killer_Per_J(_I, J, _Map, _Two, []) :-
     J < 1.
-encode_unique_neighbor_J(I, J, Map, Two, Constraints) :-
-    encode_neighbor(I, J, Map, Map, Two, Cs1),
+encode_killer_Per_J(I, J, Map, Two, Constraints) :-
+    % Box Constraints
+    (   % If
+        (I mod 3 =:= 1, J mod 3 =:= 1)
+    ->  % Then
+        encode_box(I, J, Map, Box),
+        Box_Cs = [int_array_allDiff(Box)]
+    ;   % Else
+        Box_Cs = []
+    ),
+    % Knight Constraints
+    encode_knight(I, J, Map, Map, Knight_Cs),
+    % King Constraints
+    encode_king(I, J, Map, Map, King_Cs),
+    % Neighbor Constraints
+    encode_neighbor(I, J, Map, Map, Two, Neighbor_Cs),
     NextJ is J-1,
-    encode_unique_neighbor_J(I, NextJ, Map, Two, Cs2),
-    append(Cs1, Cs2, Constraints).
+    % Continue for next J
+    encode_killer_Per_J(I, NextJ, Map, Two, Rest_Cs),
+    append([Box_Cs, Knight_Cs, King_Cs, Neighbor_Cs, Rest_Cs], Constraints).
 
-encode_unique_neighbor_I(I, _Map, _Two, []) :-
+% Scan all I (Start from 9 and decrement until smaller then 1),
+% and for each I value scan all J values in the same manner.
+encode_killer_Per_I(I, _Map, _Two, []) :-
     I < 1.
-encode_unique_neighbor_I(I, Map, Two, Constraints) :-
-    encode_unique_neighbor_J(I, 9, Map, Two, Cs1),
+encode_killer_Per_I(I, Map, Two, Constraints) :-
+    encode_killer_Per_J(I, 9, Map, Two, Cs1),
     NextI is I-1,
-    encode_unique_neighbor_I(NextI, Map, Two, Cs2),
+    encode_killer_Per_I(NextI, Map, Two, Cs2),
     append([Cs1, Cs2], Constraints).
 
-encode_killer_neighbor(Map, [new_int(Two,2,2)|Constraints]) :-
-    encode_unique_neighbor_I(9, Map, Two, Constraints).
-    
 % Encoding!
 encode_killer(killer(Instance), Map, Constraints) :-
     % Build Map as a list with int variables K at each coordinate (I,J) of the board
     findall(cell(I,J)=_K, (between(1,9,I),between(1,9,J)), Map),
     
-    % Declare each number K
+    % Declare each number K in Map
     encode_killer_Declare_Ints(Instance, Map, Cs1),
 
-    % Constraints for each row, column.
-    encode_killer_line(Map, Cs2),
-    % Constraints for each box.
-    encode_killer_box(Map, Cs3),
-    % Constraints for each knight move.
-    encode_killer_knight(Map, Cs4),
-    % Constraints for each king move.
-    encode_killer_king(Map, Cs5),
-    % Constraints for each neighbor.
-    encode_killer_neighbor(Map, Cs6),
-    append([Cs1,Cs2,Cs3,Cs4,Cs5,Cs6], Constraints).
+    % Encode each row constraints in Map
+    encode_unique_row(9, Map, Cs2),
+    % Encode each column constraints in Map
+    encode_unique_column(9, Map, Cs3),
+
+    % Declare on int with valuee two for the last constraint. (Only 1 declaration is needed,
+    % so I pass it from here to each constraints of two relevant cells).
+    Cs4 = [new_int(Two,2,2)],
+    % Encode constraints for each cell in Map
+    encode_killer_Per_I(9, Map, Two, Cs5),
+
+    % Append them together
+    append([Cs1, Cs2, Cs3, Cs4, Cs5], Constraints).
 
 % ------------------------------- Decode ------------------------------- %
 
 % The map is in the solution format, just decode each cell
 % Decoding!
 decode_killer(Map, Solution):-
-    findall(cell(I,J)=DecodedK, (between(1,9,I),between(1,9,J), member(cell(I,J)=K, Map), decodeInt(K,DecodedK)), Solution).
+    findall(cell(I,J)=DecodedK,
+            (between(1,9,I), between(1,9,J), member(cell(I,J)=K, Map), decodeInt(K,DecodedK)),
+            Solution).
 
 % -------------------------------- Solve -------------------------------- %
 
+all_ints([], []).
+all_ints([cell(_I,_J)=MK|MRest], [MK|IRest]) :-
+    all_ints(MRest, IRest).
+
+% New encoder for all solutions.
+encode_all_killer(killer(Instance), Map, ([], Ints), Constraints) :-
+    encode_killer(killer(Instance), Map, Constraints),
+    all_ints(Map, Ints).
+    
 % Solving!
-solve_killer(Instance, Solution) :-
-    runExpr(Instance, Solution, encode_killer, decode_killer, verify_killer).
+all_killer(Instance, Solution, A) :-
+    runExprAll(Instance, Solution, encode_all_killer, decode_killer, verify_killer),
+    length(Solution, A).
+
+% Sudoku Instance Example: killer([cell(5,3) = 1, cell(6,7) = 2, cell(4,5) = 6, cell(7,9) = 8])
+% Sudoku Solution Example: [cell(1,1)=4,cell(1,2)=8,cell(1,3)=3,cell(1,4)=7,cell(1,5)=2,cell(1,6)=6,cell(1,7)=1,cell(1,8)=5,cell(1,9)=9,cell(2,1)=7,cell(2,2)=2,cell(2,3)=6,cell(2,4)=1,cell(2,5)=5,cell(2,6)=9,cell(2,7)=4,cell(2,8)=8,cell(2,9)=3,cell(3,1)=1,cell(3,2)=5,cell(3,3)=9,cell(3,4)=4,cell(3,5)=8,cell(3,6)=3,cell(3,7)=7,cell(3,8)=2,cell(3,9)=6,cell(4,1)=8,cell(4,2)=3,cell(4,3)=7,cell(4,4)=2,cell(4,5)=6,cell(4,6)=1,cell(4,7)=5,cell(4,8)=9,cell(4,9)=4,cell(5,1)=2,cell(5,2)=6,cell(5,3)=1,cell(5,4)=5,cell(5,5)=9,cell(5,6)=4,cell(5,7)=8,cell(5,8)=3,cell(5,9)=7,cell(6,1)=5,cell(6,2)=9,cell(6,3)=4,cell(6,4)=8,cell(6,5)=3,cell(6,6)=7,cell(6,7)=2,cell(6,8)=6,cell(6,9)=1,cell(7,1)=3,cell(7,2)=7,cell(7,3)=2,cell(7,4)=6,cell(7,5)=1,cell(7,6)=5,cell(7,7)=9,cell(7,8)=4,cell(7,9)=8,cell(8,1)=6,cell(8,2)=1,cell(8,3)=5,cell(8,4)=9,cell(8,5)=4,cell(8,6)=8,cell(8,7)=3,cell(8,8)=7,cell(8,9)=2,cell(9,1)=9,cell(9,2)=4,cell(9,3)=8,cell(9,4)=3,cell(9,5)=7,cell(9,6)=2,cell(9,7)=6,cell(9,8)=1,cell(9,9)=5]
